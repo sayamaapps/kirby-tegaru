@@ -126,6 +126,23 @@ The numbers above come from one device and browser (current iPhone, Safari). Oth
 - **Replacing a file.** The replace dialog goes through the same script: a JPEG replaced by a JPEG is made lighter. A HEIC dropped onto a PNG or WebP is not converted; the server refuses it.
 - **Duplicates in the dialog.** Kirby drops a photo picked twice by comparing name, type, size and modification time. Once Tegaru has replaced a photo by its smaller version, Kirby cannot see that any more, so Tegaru keeps the original's name, type, size and modification time on the item and drops a re-picked original itself, silently; the prepared photo stays.
 
+### When metadata stays
+
+Files that Tegaru does not re-encode keep everything they contain, GPS included, in these cases:
+
+- every photo while `tegaru.active` is off,
+- files below `minBytes` (1 MB by default; `0` processes every file),
+- files the browser cannot read as an image, HEIC photos among them,
+- HEIC photos, and other formats such as GIF, AVIF, SVG and PDF,
+- JPEG, PNG or WebP photos whose re-encoded version would not be smaller than the original, or whose encoding fails in the browser,
+- WebP photos when the browser cannot encode WebP,
+- every photo when the settings cannot be fetched or the browser lacks what the script needs,
+- photos that are still not ready 20 seconds after they were picked.
+
+Renaming a camera capture (see the feature list above) does not change its content: left unchanged, it keeps its metadata, GPS included; re-encoded, it has none. The new name shows the date and time of selection, and nothing about the place or the device.
+
+The server's size, pixel and format checks still apply in every case. Uploads that bypass the Panel script reach the server unchanged, apart from `create:`. Whether `create:` removes metadata depends on Kirby's image driver.
+
 ## Privacy
 
 Tegaru processes no visitor data. It is a tool for the people who edit the site: photos are resized in the editor's browser and re-encoded without EXIF or GPS data, and nothing is stored in the browser. Files that are not re-encoded keep their metadata; see [Limits](#limits).
