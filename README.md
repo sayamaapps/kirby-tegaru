@@ -5,7 +5,7 @@ Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 
 *Tegaru* (手軽) is Japanese for "easy, light to handle". A 24-megapixel photo from a phone weighs 3–4 MB and often carries the GPS position of where it was taken. Tegaru shrinks it in the browser before the upload starts (longest edge 2400 px, quality 0.85, rotation applied), so about 1 MB travels over the mobile network, and the re-encoded file carries no location data. On the server a small safety net rejects files that are still too big, have too many pixels, or are HEIC.
 
 - **Smaller before the upload.** The Panel script decodes the photo, applies its EXIF rotation, scales the longest edge to 2400 px and re-encodes it in its own format: JPEG and WebP at quality 0.85, PNG as PNG. The upload dialog shows the new size. HEIC is not converted in the browser; see [Blueprints](#blueprints).
-- **No location in the re-encoded file.** A file that the browser re-encodes has no EXIF block: no GPS position, no camera model, no time of the shot. The original on the phone is not changed. Exceptions are listed under [Privacy](#privacy).
+- **No location in the re-encoded file.** A file that the browser re-encodes has no EXIF block: no GPS position, no camera model, no time of the shot. The original on the phone is not changed. Exceptions are described under [Limits](#limits).
 - **Unique names for camera captures.** A JPEG that the phone's camera names `image.jpg` (or `image.jpeg`, any case) is renamed when it is picked to `foto-<local time>.jpg`, for example `foto-2026-10-20-14-32-05.jpg`. Two captures on the same page then no longer clash in Kirby. Other names stay as they are.
 - **Safety net on the server.** A hook on `file.create:before` and `file.replace:before` rejects files above a byte cap (15 MB), above a pixel cap (40 megapixels) and HEIC/HEIF files, with a message in the site's language. The server never resizes.
 - **Off by default.** Without `'tegaru.active' => true` nothing changes: the script reads the first bytes of each picked file locally to learn its type, then asks the server once and stops.
@@ -103,7 +103,7 @@ create:
 ```
 
 - **`accept`** lists the three types instead of `type: image`. This is the documented HEIC strategy, verified on an iPhone with Safari (Android not measured). With the list restricted and HEIC not named, Safari hands over a JPEG for a photo from the photo library: the test photo, a HEIC shot with the camera set to High Efficiency, arrived as a JPEG of 1800 × 2400, upright, with no EXIF or GPS data. A HEIC file from the Files app cannot be picked, as intended. With `type: image`, HEIC files can be picked (not measured on the device); they go up unchanged and the server refuses them.
-- **`create`** is Kirby's server-side resize. It also covers what the script does not re-encode: uploads through the API or a server-side import, which never pass the Panel script, and photos the script leaves unchanged (a browser without canvas, files under `minBytes`; see [Privacy](#privacy)). Write it at the top level, as shown; under `options:` the key `create` is a permission setting.
+- **`create`** is Kirby's server-side resize. It also covers what the script does not re-encode: uploads through the API or a server-side import, which never pass the Panel script, and photos the script leaves unchanged (a browser without canvas, files under `minBytes`; see [Limits](#limits)). Whether it removes metadata depends on Kirby's image driver (`thumbs.driver`): GD writes no EXIF block, ImageMagick strips metadata from PNG only, so JPEG keeps its GPS data. Write it at the top level, as shown; under `options:` the key `create` is a permission setting.
 
 ## Browser support
 
@@ -119,16 +119,14 @@ The numbers above come from one device and browser (current iPhone, Safari). Oth
 - **Only the Panel's upload is changed.** Every file picked or dropped in the Panel passes the script: from the file dialog (on a phone also from the Files app) or dragged in from a desktop, since Kirby's drop calls the same `select` that Tegaru wraps. Files that come in through the API or a server-side import are not re-encoded.
 - **No HEIC conversion.** Tegaru does not convert or remove HEIC or HEIF files, in any browser. The server refuses them. Keep them out of the picker with the blueprint's `accept` list (see [Blueprints](#blueprints)).
 - **Other formats are left alone.** GIF, AVIF, SVG, PDF, HEIC and the like pass unchanged. PNG stays PNG and WebP stays WebP; both are only re-encoded in the browser.
-- **Files under `minBytes`** (1 MB by default) are not re-encoded, metadata included. See [Privacy](#privacy).
+- **Files under `minBytes`** (1 MB by default) are not re-encoded, metadata included.
 - **Kirby's upload module is not a documented public API.** Tegaru checks for the functions it wraps and does nothing if they are missing (one `console.info`). A test in the package fails when a Kirby release removes them.
 - **Images only.** Video and other media are not touched.
 - **Same names across one upload.** Camera captures get `-2`, `-3` … before the extension when two of them would have the same name, in the same second of the same selection; the name is compared case-blind. Other same names are left to Kirby's own check in the dialog, as without Tegaru.
 - **Replacing a file.** The replace dialog goes through the same script: a JPEG replaced by a JPEG is made lighter. A HEIC dropped onto a PNG or WebP is not converted; the server refuses it.
 - **Duplicates in the dialog.** Kirby drops a photo picked twice by comparing name, type, size and modification time. Once Tegaru has replaced a photo by its smaller version, Kirby cannot see that any more, so Tegaru keeps the original's name, type, size and modification time on the item and drops a re-picked original itself, silently; the prepared photo stays.
 
-## Privacy
-
-[PRIVACY.md](PRIVACY.md) is the English summary of what happens in the browser, what the file no longer contains and what the server does. [DATENSCHUTZ.md](DATENSCHUTZ.md) is the German text block for a site's privacy policy, and it is the authoritative version. Both describe the implementation and are not legal advice.
+### When metadata stays
 
 Files that Tegaru does not re-encode keep everything they contain, GPS included, in these cases:
 
@@ -143,7 +141,11 @@ Files that Tegaru does not re-encode keep everything they contain, GPS included,
 
 Renaming a camera capture (see the feature list above) does not change its content: left unchanged, it keeps its metadata, GPS included; re-encoded, it has none. The new name shows the date and time of selection, and nothing about the place or the device.
 
-The server's size, pixel and format checks still apply in every case. Uploads that bypass the Panel script reach the server unchanged, apart from `create:`. Whether `create:` removes metadata depends on Kirby's image driver, see [DATENSCHUTZ.md](DATENSCHUTZ.md).
+The server's size, pixel and format checks still apply in every case. Uploads that bypass the Panel script reach the server unchanged, apart from `create:`. Whether `create:` removes metadata depends on Kirby's image driver.
+
+## Privacy
+
+Tegaru processes no visitor data. It is a tool for the people who edit the site: photos are resized in the editor's browser and re-encoded without EXIF or GPS data, and nothing is stored in the browser. Files that are not re-encoded keep their metadata; see [Limits](#limits).
 
 ## Development
 
