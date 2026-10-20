@@ -340,9 +340,9 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   one. The temp dir is removed in a shutdown function, because Kirby commits its
   sessions in one.
 
-## Section C — Documentation (`README.md`, `DATENSCHUTZ.md`, `PRIVACY.md`, `CHANGELOG.md`)
+## Section C — Documentation (`README.md`, `CHANGELOG.md`)
 
-Files: the four above (README replaces the scaffold
+Files: the two above (README replaces the scaffold
 text). Style and structure follow `kirby-shoji` and `kirby-noren`: short
 intro with the Japanese word, Requirements, Installation (`composer require
 sayamaapps/kirby-tegaru`, the `repositories` entry while the package is not
@@ -358,23 +358,11 @@ path; HEIC is never converted), Limits (no server resizing,
 no HEIC conversion anywhere, GIF/SVG/PDF untouched), Development
 (`composer install`, `sh tests/run.sh`, `node --test tests/`).
 
-`DATENSCHUTZ.md` (German, authoritative) and `PRIVACY.md` (English summary)
-describe the implementation, not legal advice, in the structure of Shoji's
-files: what happens in the browser (decoding and re-encoding locally,
-nothing leaves the device but the resulting file), what the file no longer
-contains (EXIF incl. GPS, camera model, timestamp — and that the original
-on the phone is untouched), what the server does (size, pixel and HEIC
-checks on the temporary file; nothing stored beyond Kirby's own storage;
-no third party, no external service), and a short paragraph a site can
-adapt for its privacy policy ("Fotos, die über den Verwaltungsbereich
-hochgeladen werden, …"). Mark the file as `[privacy text]` relevant in the
-CHANGELOG rules (already there).
+No privacy text: Tegaru processes no visitor data. The README's Privacy section says so in three sentences.
 
-The server part of both privacy texts states the metadata behaviour of Kirby's
-two image drivers: GD writes no EXIF block; ImageMagick is called with `-strip`
+The metadata behaviour of Kirby's two image drivers: GD writes no EXIF block; ImageMagick is called with `-strip`
 for PNG only (`Darkroom/ImageMagick.php`, `strip()`), so JPEG keeps EXIF and GPS.
-Every case in which a photo goes up unchanged is listed. The same list stands
-in README (Privacy), PRIVACY.md and DATENSCHUTZ.md:
+Every case in which a photo goes up unchanged is listed here; the README's Limits section names some of them:
 
 - every photo while `tegaru.active` is off,
 - files below `minBytes` (1 MB by default; `0` processes every file),

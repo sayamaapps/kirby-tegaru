@@ -6,11 +6,14 @@ All notable changes to this project are documented here. Versions follow
 - **A change to what leaves the device** (more bytes, metadata kept, a new
   file type converted) is at least a **minor** version and described under
   "Reach" so a site operator can re-check their blueprints and privacy text.
-- A change to the privacy text (`DATENSCHUTZ.md` / `PRIVACY.md`) is marked
-  **[privacy text]**. Every site using the plugin must then review its
-  privacy policy.
 - The options route (`/api/tegaru/options`) carries `format`; it increases
   only when a field is removed, renamed or changes meaning.
+
+## [Unreleased]
+
+### Removed
+
+- **`DATENSCHUTZ.md` and `PRIVACY.md`.** Tegaru processes no visitor data, so it has no place in a site's privacy policy. The README says so under "Privacy".
 
 ## [1.0.0] — 2026-10-20
 
