@@ -1,0 +1,44 @@
+{
+    "name": "sayamaapps/kirby-tegaru",
+    "description": "Lighter photo uploads from the phone into the Kirby Panel: JPEG, PNG and WebP photos are resized in the browser before they travel, and the re-encoded file carries no EXIF or GPS; the server keeps a byte and pixel cap as a safety net.",
+    "type": "kirby-plugin",
+    "license": "MIT",
+    "keywords": ["kirby", "kirby-plugin", "kirby-5", "panel", "upload", "images", "mobile", "privacy", "exif", "gps"],
+    "homepage": "https://github.com/sayamaapps/kirby-tegaru",
+    "authors": [
+        {
+            "name": "Simon Räder",
+            "homepage": "https://sayamaapps.de"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/sayamaapps/kirby-tegaru/issues",
+        "source": "https://github.com/sayamaapps/kirby-tegaru"
+    },
+    "require": {
+        "php": "^8.2",
+        "getkirby/composer-installer": "^1.2"
+    },
+    "require-dev": {
+        "getkirby/cms": "^5.0"
+    },
+    "scripts": {
+        "test": "sh tests/run.sh"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "getkirby/composer-installer": true
+        },
+        "platform": {
+            "php": "8.2.0"
+        }
+    },
+    "extra": {
+        "installer-name": "tegaru",
+        "kirby-cms-path": false,
+        "kirby": {
+            "compatible": "^5.0"
+        }
+    }
+}
