@@ -5,7 +5,7 @@ All notable changes to this project are documented here. Versions follow
 
 - **A change to what leaves the device** (more bytes, metadata kept, a new
   file type converted) is at least a **minor** version and described under
-  "Reach" so a site operator can re-check their blueprints and privacy text.
+  "Reach" so a site operator can re-check their blueprints.
 - The options route (`/api/tegaru/options`) carries `format`; it increases
   only when a field is removed, renamed or changes meaning.
 
