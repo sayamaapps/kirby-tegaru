@@ -157,6 +157,10 @@ node --test tests/*.test.mjs     # the Panel script against a fake Panel, no dep
 
 The PHP tests are plain scripts (exit code 0 = pass), not PHPUnit. `KirbyTest.php` boots a throwaway Kirby with the plugin, and `PanelSignatureTest.php` checks that the installed Kirby's Panel still has the methods Tegaru wraps. None of the tests needs a network connection.
 
+## Maintenance
+
+This module is open source under the MIT license and is maintained for the author's own projects. Issues and pull requests are welcome, but there is no support promise and no release schedule. Report security problems privately through GitHub's private vulnerability reporting (the "Report a vulnerability" button on the Security tab).
+
 ## License
 
 MIT, see [LICENSE](LICENSE).
