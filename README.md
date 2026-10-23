@@ -24,12 +24,6 @@ Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 
 composer require sayamaapps/kirby-tegaru
 ```
 
-Until the package is on Packagist, add the repository to `composer.json` first:
-
-```json
-"repositories": [{ "type": "vcs", "url": "https://github.com/sayamaapps/kirby-tegaru" }]
-```
-
 Composer installs to `site/plugins/tegaru/`. Add that path to `.gitignore` and deploy it like `vendor/`.
 
 Everything is off by default. Switch it on in `site/config/config.php`:
