@@ -9,6 +9,7 @@ Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 
 - **Smaller uploads.** Photos are resized in the browser (longest edge 2400 px, EXIF rotation applied).
 - **No location data.** Re-encoded photos carry no EXIF or GPS block.
 - **Unique camera captures.** `image.jpg` (or `image.jpeg`) is renamed to `foto-<local time>.jpg` while active.
+- **Upload from the empty field.** A tap on an empty files field opens the device's picker (photo library and camera on a phone) instead of the list of files already there.
 - **Server safety net.** Byte cap (15 MB), pixel cap (40 megapixels) and HEIC/HEIF files are rejected.
 - **Off by default.** No cookies, no browser storage, no request to any other host.
 - **English and German.** The Panel keeps Kirby's own upload dialog.
@@ -36,7 +37,9 @@ return [
 
 ## Usage
 
-Tegaru wraps `select`, `submit` and `reset` of Kirby's Panel upload module and leaves the rest of the Panel alone. Each picked JPEG, PNG or WebP photo of at least `minBytes` is decoded, rotated, resized and re-encoded in the browser; the upload button waits until the photos are ready. The Panel script reads its settings from `GET /api/tegaru/options`, which needs a logged-in Panel user.
+Tegaru wraps `select`, `submit` and `reset` of Kirby's Panel upload module. Each picked JPEG, PNG or WebP photo of at least `minBytes` is decoded, rotated, resized and re-encoded in the browser; the upload button waits until the photos are ready. The Panel script reads its settings from `GET /api/tegaru/options`, which needs a logged-in Panel user.
+
+Tegaru also extends Kirby's files field: while `tegaru.active` is `true`, a tap on the empty field does what the field's Upload button does. The Select button still lists the files already there. A field without uploads (`uploads: false`), disabled or full keeps Kirby's behaviour. Kirby logs `Plugin is replacing "k-files-field"` in the browser console.
 
 On the server, `file.create:before` and `file.replace:before` reject files above `maxUploadBytes` (15 MB), JPEG, PNG, GIF or WebP images above `maxPixels` (40 megapixels), and HEIC/HEIF files, with a message in the site's language. The server never resizes. These checks run only while `tegaru.active` is `true`.
 

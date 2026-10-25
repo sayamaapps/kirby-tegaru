@@ -11,6 +11,10 @@ All notable changes to this project are documented here. Versions follow
 
 ## [Unreleased]
 
+### Added
+
+- **Upload from the empty files field.** While Tegaru is active, a tap on an empty files field opens the device's picker, as the field's Upload button does, so a phone offers its photo library and camera. Select still lists the files already there. Fields without uploads, disabled or full keep Kirby's behaviour. The package's tests fail when a Kirby release changes the members this relies on.
+
 ### Removed
 
 - **`DATENSCHUTZ.md` and `PRIVACY.md`.** Tegaru processes no visitor data, so it has no place in a site's privacy policy. The README says so under "Privacy".
