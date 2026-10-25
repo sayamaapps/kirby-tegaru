@@ -45,11 +45,12 @@ server byte-identical, only split into chunks when it exceeds
   goes up unchanged and the server refuses it. The blueprint's `accept` list
   (README, Blueprints) keeps HEIC out of the picker. Verified on an iPhone with
   Safari (Safari hands over a JPEG for a library photo); Android not measured. libheif-wasm is out of scope unless real use shows the case.
-- No change to Kirby's dialogs or components: no component override, no
-  DOM surgery in `k-upload-dialog`. Tegaru wraps three functions of the
-  `panel.upload` module (`select`, `submit`, and `reset` only to learn that
-  the dialog was closed; `pick` is left alone, it calls `select`) and
-  otherwise leaves the Panel alone.
+- No change to Kirby's dialogs, and no component override except the one
+  extension of `k-files-field` in section D; no DOM surgery in
+  `k-upload-dialog`. Tegaru wraps three functions of the `panel.upload` module
+  (`select`, `submit`, and `reset` only to learn that the dialog was closed;
+  `pick` is left alone, it calls `select`) and otherwise leaves the Panel
+  alone.
 - No build step, no npm, no bundler. `index.js` is one plain script,
   ES2017, loaded by Kirby from the plugin root. No modules, no `import`.
 - Nothing stored in the browser, no address of any host, no `eval`. CI
@@ -147,7 +148,9 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    waiting clicks. Nothing else changes; without `reset` a cancel is noticed
    by the dialog check or the poll instead.
 4. **Options**: fetched once per Panel session with `app.$api.get('tegaru/options')`
-   (cached promise). A failed request is asked again by the next `select`. An
+   (cached promise), by the first `select` or the first files field that
+   appears (section D). A failed request is asked again by the next `select`
+   or field. An
    answer that never comes is not asked for again: the cached promise stays
    open, every photo then goes up unchanged after the time limit. If `active` is false, `prepare` returns without
    touching the item; the first 64 KiB of the file have been read locally by
@@ -383,6 +386,49 @@ Added/Changed structure of the sibling packages.
 
 No customer names, no site names, no "measured at <site>" — the
 measurements are quoted as device + browser only.
+
+## Section D — Empty files field opens the picker (`index.js`, `tests/tegaru-js.test.mjs`, `tests/PanelSignatureTest.php`, `README.md`, `CHANGELOG.md`)
+
+Kirby's files field (`k-files-field`, extending `k-models-field`) calls
+`open()` both from its empty state (`k-collection` event `empty`) and from its
+Select button; `open()` lists the files already there (`k-files-dialog`).
+Only the small Upload button calls `$panel.upload.pick(uploadOptions)`, which
+on a phone offers the photo library and the camera. People tap the large
+empty area. Rule: every empty photo field opens the picker.
+
+1. **Register** `components: { 'k-files-field': { extends: 'k-files-field', … } }`
+   in the same `panel.plugin` call. Kirby replaces the `extends` string with
+   its registered component before Vue sees it; Kirby's own members are read
+   from there (`extends.options.methods.open`, `extends.options.computed.buttons`,
+   a computed with `get` read through its getter). Kirby logs
+   `Plugin is replacing "k-files-field"`.
+2. **`open()`**: picks (`this.$panel.upload.pick(this.uploadOptions)`) when
+   all hold: the settings have come and `active` is true; `hasDropzone` (not
+   disabled, below `max`, uploads allowed); `uploadOptions`; `upload.pick` is a
+   function; the field's buttons still have Kirby's Select button (icon
+   `checklist`). Otherwise Kirby's `open()`; without one, `null`. The picker
+   opens only within the tap, so the tap never waits for the settings: before
+   they come, the tap lists the files.
+3. **`buttons`**: Kirby's buttons, the Select button's `click` bound to
+   Kirby's `open()`, so it keeps listing the files already there. Order,
+   texts and the Upload button stay Kirby's. Without Kirby's `buttons`: `[]`.
+4. **`mounted`**: asks for the settings (item 4 of section A) when `attach`
+   ran; a failure is swallowed and asked again later.
+5. **Tests** (fake Kirby members as above): active → pick with the field's
+   `uploadOptions`, Kirby's `open()` not called; Select lists, Upload picks;
+   one settings request for several fields and a `select`; inactive, settings
+   pending, settings failed (next field asks again), no uploads, disabled,
+   full, no Select button → Kirby's `open()`; Kirby without `open`/`buttons`
+   does not throw; without the upload module nothing is asked for; a computed
+   with getter and setter. `PanelSignatureTest.php` checks the bundle for the
+   `extends` resolution, `k-files-field`, `hasDropzone`, the Upload button's
+   `pick(this.uploadOptions)`, the Select button (`checklist`, `open()`) and
+   `on:{empty:…open`, with patterns that allow other minified names.
+6. **Acceptance**: Playwright against a local Kirby 5.6 (Chromium, WebKit with
+   an iPhone profile): active → tap on the empty field opens the file chooser,
+   the photo lands in the field; Select opens the list; inactive → the empty
+   field opens the list. On a real iPhone: the sheet offers photo library and
+   camera.
 
 ## Acceptance (after A–C)
 

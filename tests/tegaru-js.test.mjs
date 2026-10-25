@@ -115,6 +115,10 @@ function fakeUpload() {
       this.calls.push('reset');
       this.files.splice(0); // as Kirby's reset() does
     },
+    pick(options) {
+      this.calls.push('pick');
+      this.picked = options;
+    },
   };
 }
 
@@ -255,6 +259,7 @@ function setup({
     app, api, upload, dialog, notifications, infos, registered, decodes, events, encodes, revoked, timers,
     urlCount: () => urls,
     tegaru: window.tegaru,
+    filesField: registered[0].extension.components?.['k-files-field'],
   };
 }
 
@@ -1023,3 +1028,197 @@ test('a different photo with the same name is not a duplicate: size, type or mod
   assert.deepEqual(s.upload.removed, []);
 });
 
+
+// Kirby's files field as far as the extension uses it. When Kirby registers
+// the component it replaces the extension's extends string with its own files
+// field; inherit() does that with a stand-in whose open and buttons are
+// Kirby's in shape: open lists the files already there, buttons has Upload
+// (while the field takes uploads) and Select, both of which Kirby wires to the
+// field. The field instance is built the way Vue merges the extension over it.
+function inherit(s, { members = 'kirby' } = {}) {
+  const log = [];
+  const kirby = {
+    methods: {
+      open() {
+        log.push('list');
+        return 'files dialog';
+      },
+    },
+    computed: {
+      buttons() {
+        const buttons = [{ text: 'select', icon: 'checklist', click: () => this.open() }];
+        if (this.hasDropzone) {
+          buttons.unshift({ text: 'upload', icon: 'upload', click: () => this.$panel.upload.pick(this.uploadOptions) });
+        }
+        return buttons;
+      },
+    },
+  };
+  s.filesField.extends = { options: members === 'kirby' ? kirby : members };
+  return log;
+}
+
+function mountField(s, { uploads = { accept: 'image/jpeg' }, disabled = false, more = true } = {}) {
+  const def = s.filesField;
+  const field = {
+    disabled,
+    more,
+    uploads,
+    $panel: { upload: s.upload },
+    // Kirby: !disabled && more && uploads (the uploads object, not true).
+    get hasDropzone() {
+      return !this.disabled && this.more && this.uploads;
+    },
+    get uploadOptions() {
+      return { accept: this.uploads.accept, url: '/api/pages/home/fields/photo/upload' };
+    },
+    get buttons() {
+      return def.computed.buttons.call(this);
+    },
+    open() {
+      return def.methods.open.call(this);
+    },
+  };
+  def.mounted.call(field);
+  return field;
+}
+
+const button = (field, icon) => field.buttons.find((b) => b.icon === icon);
+
+test('registers an extension of Kirby\'s files field next to the created hook', () => {
+  const { filesField } = setup();
+  assert.equal(filesField.extends, 'k-files-field');
+  assert.equal(typeof filesField.methods.open, 'function');
+  assert.equal(typeof filesField.computed.buttons, 'function');
+  assert.equal(typeof filesField.mounted, 'function');
+});
+
+test('active: a tap on the empty field opens the device\'s picker with the Upload button\'s options', async () => {
+  const s = setup();
+  const log = inherit(s);
+  const field = mountField(s);
+  await settle();
+  field.open(); // what Kirby's empty field calls
+  assert.deepEqual(s.upload.calls, ['pick']);
+  assert.deepEqual(s.upload.picked, field.uploadOptions);
+  assert.deepEqual(log, [], 'the list of files already there is not opened');
+});
+
+test('active: Select still lists the files already there; Upload stays Kirby\'s', async () => {
+  const s = setup();
+  const log = inherit(s);
+  const field = mountField(s);
+  await settle();
+  assert.deepEqual(field.buttons.map((b) => b.icon), ['upload', 'checklist'], 'order and buttons unchanged');
+  assert.equal(button(field, 'checklist').click(), 'files dialog');
+  assert.deepEqual(log, ['list']);
+  assert.deepEqual(s.upload.calls, []);
+  button(field, 'upload').click();
+  assert.deepEqual(s.upload.calls, ['pick']);
+});
+
+test('the settings are asked for when a field appears, once per Panel session', async () => {
+  const s = setup();
+  inherit(s);
+  mountField(s);
+  mountField(s);
+  await settle();
+  s.upload.select([photo('IMG_0001.jpeg', JPEG, { size: 2200000 })]);
+  await settle();
+  assert.deepEqual(s.api.calls, ['tegaru/options']);
+});
+
+test('inactive: the empty field lists the files already there, as in Kirby', async () => {
+  const s = setup({ options: { ...SERVER, active: false } });
+  const log = inherit(s);
+  const field = mountField(s);
+  await settle();
+  assert.equal(field.open(), 'files dialog');
+  assert.deepEqual(log, ['list']);
+  assert.deepEqual(s.upload.calls, []);
+});
+
+test('settings not there yet: a tap lists the files, since the picker cannot wait for the answer', async () => {
+  const s = setup();
+  s.api.hang = true;
+  const log = inherit(s);
+  const field = mountField(s);
+  await settle();
+  field.open();
+  assert.deepEqual(log, ['list']);
+  assert.deepEqual(s.upload.calls, []);
+});
+
+test('settings failed: a tap lists the files; the next field asks again and then picks', async () => {
+  const s = setup();
+  s.api.fail = true;
+  const log = inherit(s);
+  const first = mountField(s);
+  await settle();
+  first.open();
+  assert.deepEqual(log, ['list']);
+  s.api.fail = false;
+  const second = mountField(s);
+  await settle();
+  second.open();
+  assert.deepEqual(s.api.calls, ['tegaru/options', 'tegaru/options']);
+  assert.deepEqual(s.upload.calls, ['pick']);
+});
+
+test('a field that takes no uploads, is disabled or full lists the files, as in Kirby', async () => {
+  const s = setup();
+  const log = inherit(s);
+  const fields = [mountField(s, { uploads: false }), mountField(s, { disabled: true }), mountField(s, { more: false })];
+  await settle();
+  fields.forEach((field) => field.open());
+  assert.deepEqual(log, ['list', 'list', 'list']);
+  assert.deepEqual(s.upload.calls, []);
+});
+
+test('Kirby without the Select button: the empty field keeps listing the files, so they stay reachable', async () => {
+  const s = setup();
+  const log = [];
+  inherit(s, {
+    members: {
+      methods: { open: () => log.push('list') },
+      computed: { buttons: () => [{ text: 'upload', icon: 'upload', click() {} }] },
+    },
+  });
+  const field = mountField(s);
+  await settle();
+  field.open();
+  assert.deepEqual(log, ['list']);
+  assert.deepEqual(s.upload.calls, []);
+});
+
+test('Kirby without open or buttons: nothing throws, the field has no buttons of Tegaru\'s', async () => {
+  const s = setup({ options: { ...SERVER, active: false } });
+  inherit(s, { members: {} });
+  const field = mountField(s);
+  await settle();
+  assert.equal(field.open(), null);
+  assert.equal(field.buttons.length, 0);
+});
+
+test('without the upload module: nothing is asked for and the empty field lists the files', async () => {
+  const upload = { files: [], submit() { return 'original'; } };
+  const s = setup({ upload });
+  const log = inherit(s);
+  const field = mountField(s);
+  await settle();
+  field.open();
+  assert.deepEqual(s.api.calls, []);
+  assert.deepEqual(log, ['list']);
+});
+
+test('a computed with getter and setter is read through its getter', async () => {
+  const s = setup();
+  const log = inherit(s);
+  const buttons = s.filesField.extends.options.computed.buttons;
+  s.filesField.extends.options.computed.buttons = { get: buttons, set() {} };
+  const field = mountField(s);
+  await settle();
+  assert.deepEqual(field.buttons.map((b) => b.icon), ['upload', 'checklist']);
+  button(field, 'checklist').click();
+  assert.deepEqual(log, ['list']);
+});

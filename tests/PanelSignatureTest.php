@@ -2,7 +2,8 @@
 /**
  * The installed Kirby's Panel bundle still has what index.js wraps: the
  * plugin hook `created` in plugins.js, and in index.min.js the upload methods
- * pick/select/submit/upload and the call that runs the plugins' `created`.
+ * pick/select/submit/upload, the call that runs the plugins' `created`, and
+ * the members of the files field that index.js extends.
  * Reads the files only; prints the Kirby version it checked.
  *   php tests/PanelSignatureTest.php
  */
@@ -40,6 +41,22 @@ try {
         holds(str_contains($bundle, $method), "index.min.js contains $method");
     }
     holds(str_contains($bundle, 'plugins.created'), 'index.min.js runs plugins.created');
+
+    // The files field extension (SPEC section D): Kirby resolves a plugin's
+    // extends string to the registered component, the files field has its
+    // Upload button's members, and the empty field and the Select button both
+    // call open(). Patterns allow other variable names of the minifier.
+    $field = [
+        'a plugin component extends a registered one' => '/\.extends=\w+\[\w+\.extends\]\.extend\(/',
+        'k-files-field is registered' => '/component\("k-files-field",/',
+        'the files field computes hasDropzone' => '/hasDropzone\(\)\{return!this\.disabled&&this\.more&&this\.uploads\}/',
+        'the Upload button picks with uploadOptions' => '/\$panel\.upload\.pick\(this\.uploadOptions\)/',
+        'the Select button has the checklist icon and calls open()' => '/text:this\.\$t\("select"\),icon:"checklist",responsive:!0,click:\(\)=>this\.open\(\)/',
+        'the empty collection calls open' => '/on:\{empty:\w+\.open,/',
+    ];
+    foreach ($field as $what => $pattern) {
+        holds(preg_match($pattern, $bundle) === 1, "index.min.js: $what");
+    }
 
     echo "PanelSignatureTest: Kirby $version, $checks checks passed\n";
 } catch (Throwable $e) {

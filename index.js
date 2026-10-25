@@ -22,6 +22,11 @@
  * Without select and submit (another Kirby version) one console.info is
  * logged and nothing is changed.
  *
+ * Kirby's files field is extended once: while Tegaru is active, a tap on the
+ * empty field opens the device's picker, as the field's Upload button does,
+ * so a phone offers its photo library and camera. Select still lists the
+ * files already there.
+ *
  * A plain script: ES2017, no modules, no build step. Kirby loads it from the
  * plugin root. The pure helpers and the time limit are exposed as
  * window.tegaru for the tests.
@@ -313,6 +318,11 @@
   // item removed by hand or a dialog closed by other means is noticed soon.
   var POLL = 100;
 
+  // The settings as far as the files field needs them before a tap: attach()
+  // sets load, and known once an answer came. A tap cannot wait for the
+  // request, because the device's picker opens only within the tap itself.
+  var settings = { load: null, known: null };
+
   /**
    * Wraps select, submit and reset of one upload module; app gives the API and
    * the translations. reset is wrapped only to learn at once that the dialog
@@ -401,12 +411,13 @@
             if (!data || typeof data !== 'object') {
               throw new Error('tegaru/options: no options object');
             }
-            return {
+            settings.known = {
               active: data.active === true,
               maxEdge: data.maxEdge,
               quality: data.quality,
               minBytes: data.minBytes
             };
+            return settings.known;
           })
           .catch(function (error) {
             optionsPromise = null;
@@ -415,6 +426,7 @@
       }
       return optionsPromise;
     }
+    settings.load = loadOptions;
 
     function notify(kind, key, values) {
       window.panel.notification[kind](app.$t(key, values));
@@ -706,6 +718,92 @@
     }
   }
 
+  /**
+   * Kirby's files field, extended. Kirby's empty field and its Select button
+   * both call open(), which lists the files already there. While Tegaru is
+   * active, a tap on the empty field opens the device's picker instead, with
+   * the options of the field's own Upload button, so a phone offers its photo
+   * library and camera. Select is bound to Kirby's open() and keeps listing
+   * the files already there. When Kirby registers this component it replaces
+   * the extends string with its own files field; inherited() reads Kirby's
+   * members from there.
+   */
+  var filesField = {
+    extends: 'k-files-field',
+    computed: {
+      buttons: function () {
+        var buttons = callInherited('computed', 'buttons', this) || [];
+        var at = selectButton(buttons);
+        if (at >= 0) {
+          var field = this;
+          buttons[at] = Object.assign({}, buttons[at], {
+            click: function () {
+              return callInherited('methods', 'open', field);
+            }
+          });
+        }
+        return buttons;
+      }
+    },
+    // The settings are asked for when a field appears, so the first tap knows them.
+    mounted: function () {
+      if (settings.load) {
+        settings.load().catch(function () {
+          // Asked again by the next field or select; until then a tap lists the files.
+        });
+      }
+    },
+    methods: {
+      open: function () {
+        if (uploadsWhenEmpty(this)) {
+          return this.$panel.upload.pick(this.uploadOptions);
+        }
+        return callInherited('methods', 'open', this);
+      }
+    }
+  };
+
+  /** Kirby's own computed or method of the files field, or null. */
+  function inherited(kind, name) {
+    var parent = filesField.extends;
+    var members = parent && parent.options ? parent.options[kind] : null;
+    var member = members ? members[name] : null;
+    if (member && typeof member === 'object') {
+      member = member.get; // a computed with a getter and a setter
+    }
+    return typeof member === 'function' ? member : null;
+  }
+
+  function callInherited(kind, name, field) {
+    var member = inherited(kind, name);
+    return member ? member.call(field) : null;
+  }
+
+  /** The index of Kirby's Select button (icon checklist), -1 without one. */
+  function selectButton(buttons) {
+    for (var i = 0; i < buttons.length; i++) {
+      if (buttons[i] && buttons[i].icon === 'checklist') {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * True when a tap on the empty field opens the device's picker: Tegaru is
+   * active (its settings have come), the field takes uploads (Kirby's
+   * hasDropzone: not disabled, below max, uploads allowed), the upload module
+   * can pick, and Select still lists the files already there.
+   */
+  function uploadsWhenEmpty(field) {
+    var upload = field.$panel ? field.$panel.upload : null;
+    return Boolean(settings.known && settings.known.active) &&
+      Boolean(field.hasDropzone) &&
+      Boolean(field.uploadOptions) &&
+      Boolean(upload) && typeof upload.pick === 'function' &&
+      selectButton(field.buttons || []) >= 0;
+  }
+
   window.tegaru = {
     sniff: sniff,
     targetSize: targetSize,
@@ -722,6 +820,9 @@
   }
 
   window.panel.plugin('sayamaapps/tegaru', {
+    components: {
+      'k-files-field': filesField
+    },
     created: function (app) {
       var upload = app && app.$panel ? app.$panel.upload : null;
       if (!upload || typeof upload.select !== 'function' || typeof upload.submit !== 'function') {
