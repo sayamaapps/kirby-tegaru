@@ -119,7 +119,8 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    (name, type, size, lastModified, kept as `item.tegaruOriginal` by
    `keepOriginal`, before a rename or replacement), remove it silently; the prepared item stays (Kirby's own filter,
    which can no longer see the match, would keep the later pick). Otherwise
-   set `item.tegaru = 'pending'` and add its
+   set `item.tegaru = 'pending'`, `item.tegaruStamp` (the local time, item 5b)
+   and `item.tegaruName` (the name Kirby gave the item, `item.name`), and add its
    job (`prepare(item)` raced with the time limit, see item 5) to a `Map` of
    pending promises to their items (remove on settle). Never throw
    out of `select`.
@@ -217,6 +218,9 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
      `item.name` (without extension), `item.extension` (`jpg`) and
      `item.filename`; `item.url` is not changed. A name that is not a camera
      name, or content that is not JPEG (a PNG named `image.jpg`), keeps its name.
+     A name the user typed in the open dialog after the selection (`item.name`
+     differs from `item.tegaruName`, set in item 2) is kept as well: the
+     answer of the options may come later, and the rename is then skipped.
      Kirby's duplicate filter (item 2) still sees a re-picked original through
      `item.tegaruOriginal`.
 6. **Notification** once per `select` call after all its items settled, only
@@ -250,7 +254,7 @@ calls) and a fake `app` with `$panel.upload` (`files`, `select`, `submit`,
 - `targetSize`: 4032×3024 → 2560×1920 scale 0.635; 1000×800 → unchanged scale 1; 3024×4032 → 1920×2560.
 - `isCameraName`, `stamp`, `cameraName`: `image.jpg`, `IMAGE.JPEG` and `image.jpeg` are camera names, `myimage.jpg` is not; the stamp has leading zeros; `cameraName('2026-10-20-14-32-05', [])` → `foto-2026-10-20-14-32-05.jpg`; with a taken `FOTO-…JPG` → `-2` (case-blind).
 - `decide`: small JPEG under `minBytes` → skip; big JPEG → resize; PNG above maxEdge → resize; PNG below maxEdge → resize; PNG under minBytes → skip; WebP big → resize; HEIC any size → skip; GIF → skip; `active: false` → skip.
-- camera captures: `image.jpg` is renamed to `foto-<clock>.jpg` (the clock is fixed in the tests) and resized as before; under `minBytes` it is renamed too; two in one second get `-2`, `-3`; `active: false` and unknown settings keep the name; a PNG named `image.jpg` keeps its name.
+- camera captures: `image.jpg` is renamed to `foto-<clock>.jpg` (the clock is fixed in the tests) and resized as before; under `minBytes` it is renamed too; two in one second get `-2`, `-3`; `active: false` and unknown settings keep the name; a PNG named `image.jpg` keeps its name; a name typed while the options are still awaited is kept when the answer arrives.
 - wrapping: after `select` with two fake items, `submit` waits for the
   pending promises (order observable through a log); a rejecting `prepare`
   does not stop `submit`; `select` is still synchronous (dialog state
