@@ -8,7 +8,7 @@ use Sayamaapps\Tegaru\Options;
 
 /**
  * Options are read as sayamaapps.tegaru.<key>, with the 1.x spelling
- * tegaru.<key> as fallback (OPT-1). The fallback is reported as a deprecation
+ * tegaru.<key> as fallback. The fallback is reported as a deprecation
  * in debug mode.
  */
 #[CoversClass(Options::class)]
@@ -101,6 +101,12 @@ final class OptionsPrefixTest extends TestCase
 			expect(true, Options::active($kirby), 'tegaru.active is read as fallback');
 		});
 		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
+	}
+
+	public function testThePrefixConstantsKeepTheirValues(): void
+	{
+		expect('tegaru.', Options::PREFIX, 'PREFIX is the 1.x prefix, unchanged for code that reads it');
+		expect('sayamaapps.tegaru.', Options::OPTION_PREFIX, 'OPTION_PREFIX is the prefix of the new names');
 	}
 
 	public function testTheOptionsBlockDeclaresEveryKeyWithANullDefault(): void

@@ -44,11 +44,11 @@ class Options
 	/** Format of the options route; it increases only when a field is removed, renamed or changes meaning. */
 	public const FORMAT = 1;
 
-	/** Option prefix of 1.x, read as a fallback until 2.0. */
-	public const LEGACY_PREFIX = 'tegaru.';
+	/** Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it. */
+	public const PREFIX = 'tegaru.';
 
-	/** Option prefix since 1.2 (OPT-1). */
-	public const PREFIX = 'sayamaapps.tegaru.';
+	/** Option prefix; `PREFIX` is read as the fallback until 2.0. */
+	public const OPTION_PREFIX = 'sayamaapps.tegaru.';
 
 	/** Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing. */
 	public static function active(App $kirby): bool
@@ -83,18 +83,22 @@ class Options
 		];
 	}
 
+	/**
+	 * The value of an option: `sayamaapps.tegaru.<key>`, else the 1.x
+	 * `tegaru.<key>` (reported as deprecated in debug mode), else $default.
+	 */
 	public static function get(App $kirby, string $key, mixed $default = null): mixed
 	{
-		$value = $kirby->option(self::PREFIX . $key);
+		$value = $kirby->option(self::OPTION_PREFIX . $key);
 		if ($value !== null) {
 			return $value;
 		}
 
 		// The 1.x spelling still works, with a deprecation (README, Deprecations).
-		$legacy = $kirby->option(self::LEGACY_PREFIX . $key);
+		$legacy = $kirby->option(self::PREFIX . $key);
 		if ($legacy !== null) {
 			Helpers::deprecated(
-				'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::PREFIX . $key,
+				'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
 				'option-prefix'
 			);
 		}
