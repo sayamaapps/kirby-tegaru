@@ -21,14 +21,11 @@ To try the plugin on a site, link or copy the folder to `site/plugins/tegaru/`.
 Run these before you open a pull request. CI runs the same checks on PHP 8.2 to 8.5.
 
 ```sh
-composer test                     # PHPUnit
-composer analyze:psalm            # Psalm
-composer analyze:phpmd            # PHP Mess Detector
-composer analyze:unused           # unused Composer packages
-composer analyze:require-checker  # undeclared dependencies
-composer normalize:check          # composer.json layout
+composer ci                       # everything below that Composer runs
 node --test tests/*.test.mjs      # the Panel script
 ```
+
+`composer ci` runs PHPUnit (`composer test`), Psalm, PHP Mess Detector, the unused and undeclared dependency checks, `composer validate` and the `composer.json` layout check.
 
 Code style is checked with PHP-CS-Fixer and the Kirby rule set (`getkirby/php-cs`). The package is installed globally, because it needs PHP 8.3 or newer and this package supports PHP 8.2:
 
@@ -40,6 +37,7 @@ kirby-cs fix --dry-run --diff     # the global bin directory must be in PATH
 ## Conventions
 
 - Tabs for indentation, LF line endings. `.editorconfig` lists the rest.
+- There is no build step. `index.js` is the Panel script as it ships; there is no compiled or generated copy.
 - Classes live in `src/`, one class per file. The class map in `autoload.php` lists them, and `tests/AutoloadTest.php` checks it.
 - Keep public names stable. A rename gets a deprecation wrapper first, see the README section Deprecations.
 - Commit messages follow Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `style:`, `chore:`).

@@ -6,5 +6,5 @@
 
 - [ ] Tests added or updated for the fix or feature
 - [ ] Code comments and README updated where behaviour or options change
-- [ ] `composer test`, `composer analyze:psalm`, `composer analyze:phpmd` pass locally
+- [ ] `composer ci` passes locally (style check and duplicated code: see CONTRIBUTING)
 - [ ] Public names (functions, options, methods, snippets) unchanged, or a deprecation wrapper added
