@@ -14,6 +14,7 @@ namespace Sayamaapps\Tegaru;
  * The language is set once per request (Options::language()) and defaults
  * to English. Missing keys fall back to English, then to the key.
  *
+ * @package   Kirby Tegaru
  * @author    Simon Räder
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
@@ -46,11 +47,13 @@ class I18n
 		return $translations;
 	}
 
+	/** The language the messages are built in: the one set by setLanguage(), English by default. */
 	public static function language(): string
 	{
 		return self::$language;
 	}
 
+	/** Sets the language of later t() calls. A language Tegaru does not ship becomes English. */
 	public static function setLanguage(string $language): void
 	{
 		self::$language = in_array($language, self::LANGUAGES, true) ? $language : 'en';

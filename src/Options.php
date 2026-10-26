@@ -19,6 +19,7 @@ use Kirby\Cms\Helpers;
  * plugin (config/options.php) lists the keys with null: a default there would
  * hide the 1.x spelling.
  *
+ * @package   Kirby Tegaru
  * @author    Simon Räder
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
@@ -133,21 +134,25 @@ class Options
 		return 'en';
 	}
 
+	/** Longest edge of the browser-side result in pixels; the default when not a positive integer. */
 	public static function maxEdge(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxEdge', self::DEFAULT_MAX_EDGE);
 	}
 
+	/** Server cap in pixels (width × height) per raster image; the default when not a positive integer. */
 	public static function maxPixels(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxPixels', self::DEFAULT_MAX_PIXELS);
 	}
 
+	/** Server cap in bytes per uploaded file; the default when not a positive integer. */
 	public static function maxUploadBytes(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxUploadBytes', self::DEFAULT_MAX_UPLOAD_BYTES);
 	}
 
+	/** Files below this size in bytes are left alone in the browser; the default when not a non-negative integer. */
 	public static function minBytes(App $kirby): int
 	{
 		return self::nonNegativeInt($kirby, 'minBytes', self::DEFAULT_MIN_BYTES);

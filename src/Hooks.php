@@ -15,6 +15,7 @@ use Kirby\Filesystem\File as Upload;
  * hook is a safety net only: byte cap, pixel cap, and HEIC/HEIF rejected
  * because Kirby cannot resize or thumbnail it (README, Limits).
  *
+ * @package   Kirby Tegaru
  * @author    Simon Räder
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder

@@ -21,6 +21,7 @@ namespace Sayamaapps\Tegaru;
  * Only the first 32 bytes are read for sniffing; getimagesize() runs only for
  * raster images.
  *
+ * @package   Kirby Tegaru
  * @author    Simon Räder
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
