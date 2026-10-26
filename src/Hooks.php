@@ -14,6 +14,11 @@ use Kirby\Filesystem\File as Upload;
  * (the API, a server-side import) and photos the script leaves unchanged. The
  * hook is a safety net only: byte cap, pixel cap, and HEIC/HEIF rejected
  * because Kirby cannot resize or thumbnail it (README, Limits).
+ *
+ * @author    Simon Räder
+ * @link      https://github.com/sayamaapps/kirby-tegaru
+ * @copyright Simon Räder
+ * @license   https://opensource.org/licenses/MIT
  */
 class Hooks
 {

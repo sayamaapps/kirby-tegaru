@@ -18,8 +18,13 @@ use Kirby\Cms\Helpers;
  * Defaults are given here and at the call sites. The `options` block of the
  * plugin (config/options.php) lists the keys with null: a default there would
  * hide the 1.x spelling.
+ *
+ * @author    Simon Räder
+ * @link      https://github.com/sayamaapps/kirby-tegaru
+ * @copyright Simon Räder
+ * @license   https://opensource.org/licenses/MIT
  */
-final class Options
+class Options
 {
 	/** Longest edge of the browser-side result, in pixels. */
 	public const DEFAULT_MAX_EDGE = 2400;
