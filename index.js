@@ -476,11 +476,15 @@
      * A camera capture (JPEG named image.jpg or image.jpeg) gets its name from
      * the time of selection, so the next capture does not clash with it. Only
      * with the settings in hand and only while Tegaru is active. The item
-     * keeps its bytes; only the name changes.
+     * keeps its bytes; only the name changes. A name the user typed after the
+     * selection (item.name differs from tegaruName) is kept.
      */
     function renameCapture(item, sniffed, opts) {
       var file = item.src;
       if (!opts.active || sniffed !== 'jpeg' || !isCameraName(file.name)) {
+        return;
+      }
+      if (item.name !== item.tegaruName) {
         return;
       }
       var name = cameraName(item.tegaruStamp, takenNames(item));
@@ -639,6 +643,7 @@
           }
           list[i].tegaru = 'pending';
           list[i].tegaruStamp = stamp(new Date()); // the time of selection, for a camera name
+          list[i].tegaruName = list[i].name; // the name Kirby gave it; a rename by the user changes item.name only
           batch.push(list[i]);
         }
       }

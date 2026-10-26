@@ -11,6 +11,10 @@ All notable changes to this project are documented here. Versions follow
 
 ## [Unreleased]
 
+### Fixed
+
+- **A name typed in the dialog is kept for a camera capture.** The camera name `foto-<time>.jpg` was applied when the options answer arrived, even if the name had been changed in the open dialog meanwhile. The rename is now skipped once the name differs from the one Kirby gave the item at selection.
+
 ## [1.1.0] — 2026-10-25
 
 ### Added

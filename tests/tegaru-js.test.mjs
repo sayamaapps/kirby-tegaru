@@ -245,6 +245,9 @@ function setup({
       get(path) {
         api.calls.push(path);
         api.readsAtCall.push(upload.files.map((item) => item.src.reads));
+        if (api.gate) {
+          return api.gate.promise.then(() => options); // the answer comes when the test releases it
+        }
         if (api.hang) {
           return new Promise(() => {}); // the answer never comes
         }
@@ -606,6 +609,23 @@ test('other names are not camera names: myimage.jpg and IMG_0002.jpeg keep their
   await s.upload.submit();
   await settle();
   assert.deepEqual(s.upload.files.map((item) => item.filename), ['myimage.jpg', 'IMG_0002.jpeg']);
+});
+
+test('a name typed before the settings arrive is kept: a late answer does not rename a camera capture over it', async () => {
+  const s = setup({ encodedSize: () => 1000000 });
+  s.api.gate = deferred();
+  s.upload.select([photo('image.jpg', JPEG, { size: 2200000 })]);
+  await settle();
+  assert.equal(s.api.calls.length, 1, 'the settings are being asked for');
+  const [item] = s.upload.files;
+  item.name = 'portrait'; // the user renames in the open dialog while the answer is on its way
+  s.api.gate.resolve();
+  await s.upload.submit();
+  assert.equal(item.name, 'portrait');
+  assert.equal(item.filename, 'image.jpg');
+  assert.equal(item.src.name, 'image.jpg');
+  assert.equal(item.tegaru.to, 1000000, 'still resized');
+  assert.deepEqual(s.notifications, [['success', 'tegaru.panel.resizedOne{"from":"2.2MB","to":"1MB"}']]);
 });
 
 test('settings that never arrive: a camera capture keeps its name, since Tegaru cannot tell it is active', async () => {
