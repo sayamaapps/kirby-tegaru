@@ -30,8 +30,8 @@ require_once __DIR__ . '/legacy.php';
  * leaves it as it is, and the blueprint's `accept` list keeps it out of
  * the picker (README, "HEIC"). It runs for new files and for replacements.
  *
- * Defaults are passed as fallback values directly at each option call, NOT
- * in an 'options' block (Kirby would file them under sayamaapps.tegaru.*).
+ * The options are declared in config/options.php with null defaults; the
+ * defaults are given where they are read (Options).
  */
 
 /** Language for this request. Called before any message is built. */
@@ -68,6 +68,7 @@ function tegaru_guard(App $kirby, Upload $upload): void
 Kirby::plugin(
 	name: 'sayamaapps/tegaru',
 	extends: [
+		'options'      => require __DIR__ . '/config/options.php',
 		'translations' => require __DIR__ . '/config/translations.php',
 		'api'          => require __DIR__ . '/config/api.php',
 		'hooks'        => require __DIR__ . '/config/hooks.php',

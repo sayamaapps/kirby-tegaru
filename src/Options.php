@@ -3,16 +3,21 @@
 namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
+use Kirby\Cms\Helpers;
 
 /**
- * Reads `tegaru.*` options.
+ * Reads Tegaru's options: `sayamaapps.tegaru.<key>`, falling back to the 1.x
+ * name `tegaru.<key>`.
  *
  * `null` counts as "not set", like Kirby's own option(), so a key set to
- * null falls back to the default. Both spellings work, flat
- * (`'tegaru.active' => true`) and nested (`'tegaru' => ['active' => true]`).
+ * null falls back to the default. The 1.x names work flat and nested
+ * (`'tegaru' => ['active' => true]`). The new names are written flat: once the
+ * plugin declares its options, Kirby reads the nested form of a dotted
+ * prefix as unset.
  *
- * Defaults are passed as fallback values at each call, NOT in an 'options'
- * block of the plugin (Kirby would file them under sayamaapps.tegaru.*).
+ * Defaults are given here and at the call sites. The `options` block of the
+ * plugin (config/options.php) lists the keys with null: a default there would
+ * hide the 1.x spelling.
  */
 final class Options
 {
@@ -33,9 +38,14 @@ final class Options
 
 	/** Format of the options route; it increases only when a field is removed, renamed or changes meaning. */
 	public const FORMAT = 1;
-	public const PREFIX = 'tegaru.';
 
-	/** Off by default: without `'tegaru.active' => true` the plugin does nothing. */
+	/** Option prefix of 1.x, read as a fallback until 2.0. */
+	public const LEGACY_PREFIX = 'tegaru.';
+
+	/** Option prefix since 1.2 (OPT-1). */
+	public const PREFIX = 'sayamaapps.tegaru.';
+
+	/** Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing. */
 	public static function active(App $kirby): bool
 	{
 		return self::get($kirby, 'active', false) === true;
@@ -64,7 +74,21 @@ final class Options
 
 	public static function get(App $kirby, string $key, mixed $default = null): mixed
 	{
-		return $kirby->option(self::PREFIX . $key) ?? $default;
+		$value = $kirby->option(self::PREFIX . $key);
+		if ($value !== null) {
+			return $value;
+		}
+
+		// The 1.x spelling still works, with a deprecation (README, Deprecations).
+		$legacy = $kirby->option(self::LEGACY_PREFIX . $key);
+		if ($legacy !== null) {
+			Helpers::deprecated(
+				'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::PREFIX . $key,
+				'option-prefix'
+			);
+		}
+
+		return $legacy ?? $default;
 	}
 
 	/**
