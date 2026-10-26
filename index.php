@@ -38,7 +38,7 @@ use Tegaru\Options;
 /** Language for this request. Called before any message is built. */
 function tegaru_i18n(): void
 {
-    I18n::setLanguage(Options::language(App::instance()));
+	I18n::setLanguage(Options::language(App::instance()));
 }
 
 /**
@@ -51,59 +51,59 @@ function tegaru_i18n(): void
  */
 function tegaru_guard(App $kirby, Upload $upload): void
 {
-    if (!Options::active($kirby)) {
-        return;
-    }
-    $root = $upload->root();
-    if (!is_string($root) || $root === '') {
-        return; // nothing on disk to inspect: Kirby's own checks take over
-    }
-    $violation = Guard::inspect($root, Options::maxUploadBytes($kirby), Options::maxPixels($kirby));
-    if ($violation === null) {
-        return;
-    }
-    tegaru_i18n();
-    throw new InvalidArgumentException(I18n::t($violation['key'], $violation['values']));
+	if (!Options::active($kirby)) {
+		return;
+	}
+	$root = $upload->root();
+	if (!is_string($root) || $root === '') {
+		return; // nothing on disk to inspect: Kirby's own checks take over
+	}
+	$violation = Guard::inspect($root, Options::maxUploadBytes($kirby), Options::maxPixels($kirby));
+	if ($violation === null) {
+		return;
+	}
+	tegaru_i18n();
+	throw new InvalidArgumentException(I18n::t($violation['key'], $violation['values']));
 }
 
 $tegaruTranslations = [];
 foreach (I18n::LANGUAGES as $tegaruLanguage) {
-    foreach (I18n::table($tegaruLanguage) as $tegaruKey => $tegaruText) {
-        $tegaruTranslations[$tegaruLanguage]['tegaru.' . $tegaruKey] = $tegaruText;
-    }
+	foreach (I18n::table($tegaruLanguage) as $tegaruKey => $tegaruText) {
+		$tegaruTranslations[$tegaruLanguage]['tegaru.' . $tegaruKey] = $tegaruText;
+	}
 }
 unset($tegaruLanguage, $tegaruKey, $tegaruText);
 
 App::plugin('sayamaapps/tegaru', [
-    // The messages, also usable as t('tegaru.<key>') and, in the Panel, panel.$t('tegaru.<key>').
-    'translations' => $tegaruTranslations,
+	// The messages, also usable as t('tegaru.<key>') and, in the Panel, panel.$t('tegaru.<key>').
+	'translations' => $tegaruTranslations,
 
-    /**
-     * What the Panel script needs: GET /api/tegaru/options. API routes
-     * need a logged-in user (Kirby's default auth), so nothing about the
-     * configuration leaks to visitors.
-     */
-    'api' => [
-        'routes' => fn (App $kirby) => [
-            [
-                'pattern' => 'tegaru/options',
-                'method'  => 'GET',
-                'action'  => fn () => Options::forPanel($kirby),
-            ],
-        ],
-    ],
+	/**
+	 * What the Panel script needs: GET /api/tegaru/options. API routes
+	 * need a logged-in user (Kirby's default auth), so nothing about the
+	 * configuration leaks to visitors.
+	 */
+	'api' => [
+		'routes' => fn (App $kirby) => [
+			[
+				'pattern' => 'tegaru/options',
+				'method'  => 'GET',
+				'action'  => fn () => Options::forPanel($kirby),
+			],
+		],
+	],
 
-    /**
-     * The safety net. `$upload` is the file still in PHP's tmp directory;
-     * an exception here cancels the upload (or the replacement) and the
-     * Panel shows its message.
-     */
-    'hooks' => [
-        'file.create:before' => function (File $file, Upload $upload): void {
-            tegaru_guard(App::instance(), $upload);
-        },
-        'file.replace:before' => function (File $file, Upload $upload): void {
-            tegaru_guard(App::instance(), $upload);
-        },
-    ],
+	/**
+	 * The safety net. `$upload` is the file still in PHP's tmp directory;
+	 * an exception here cancels the upload (or the replacement) and the
+	 * Panel shows its message.
+	 */
+	'hooks' => [
+		'file.create:before' => function (File $file, Upload $upload): void {
+			tegaru_guard(App::instance(), $upload);
+		},
+		'file.replace:before' => function (File $file, Upload $upload): void {
+			tegaru_guard(App::instance(), $upload);
+		},
+	],
 ]);

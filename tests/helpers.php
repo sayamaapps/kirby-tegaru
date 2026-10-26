@@ -8,11 +8,11 @@ use PHPUnit\Framework\Assert;
  */
 function expect(mixed $expected, mixed $actual, string $what): void
 {
-    Assert::assertSame($expected, $actual, $what);
+	Assert::assertSame($expected, $actual, $what);
 }
 
 /** A condition that must hold, with a label. */
 function holds(bool $ok, string $what): void
 {
-    Assert::assertTrue($ok, $what);
+	Assert::assertTrue($ok, $what);
 }
