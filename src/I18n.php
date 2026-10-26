@@ -24,6 +24,23 @@ final class I18n
 	/** @var array<string, array<string,string>> */
 	private static array $tables = [];
 
+	/**
+	 * The messages as Kirby translations, keyed `tegaru.<key>` per language, as
+	 * the Panel script reads them (`panel.$t('tegaru.<key>')`).
+	 *
+	 * @return array<string, array<string,string>>
+	 */
+	public static function kirbyTranslations(): array
+	{
+		$translations = [];
+		foreach (self::LANGUAGES as $language) {
+			foreach (self::table($language) as $key => $text) {
+				$translations[$language]['tegaru.' . $key] = $text;
+			}
+		}
+		return $translations;
+	}
+
 	public static function language(): string
 	{
 		return self::$language;

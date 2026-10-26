@@ -5,13 +5,12 @@ use Kirby\Cms\File;
 use Kirby\Exception\InvalidArgumentException;
 use Kirby\Filesystem\F;
 use Kirby\Filesystem\File as Upload;
-
-F::loadClasses(require __DIR__ . '/autoload.php', __DIR__);
-require_once __DIR__ . '/legacy.php';
-
 use Sayamaapps\Tegaru\Guard;
 use Sayamaapps\Tegaru\I18n;
 use Sayamaapps\Tegaru\Options;
+
+F::loadClasses(require __DIR__ . '/autoload.php', __DIR__);
+require_once __DIR__ . '/legacy.php';
 
 /**
  * Tegaru (手軽, "light to handle") — photos from the phone reach the Panel
@@ -66,44 +65,12 @@ function tegaru_guard(App $kirby, Upload $upload): void
 	throw new InvalidArgumentException(I18n::t($violation['key'], $violation['values']));
 }
 
-$tegaruTranslations = [];
-foreach (I18n::LANGUAGES as $tegaruLanguage) {
-	foreach (I18n::table($tegaruLanguage) as $tegaruKey => $tegaruText) {
-		$tegaruTranslations[$tegaruLanguage]['tegaru.' . $tegaruKey] = $tegaruText;
-	}
-}
-unset($tegaruLanguage, $tegaruKey, $tegaruText);
-
-App::plugin('sayamaapps/tegaru', [
-	// The messages, also usable as t('tegaru.<key>') and, in the Panel, panel.$t('tegaru.<key>').
-	'translations' => $tegaruTranslations,
-
-	/**
-	 * What the Panel script needs: GET /api/tegaru/options. API routes
-	 * need a logged-in user (Kirby's default auth), so nothing about the
-	 * configuration leaks to visitors.
-	 */
-	'api' => [
-		'routes' => fn (App $kirby) => [
-			[
-				'pattern' => 'tegaru/options',
-				'method'  => 'GET',
-				'action'  => fn () => Options::forPanel($kirby),
-			],
-		],
+Kirby::plugin(
+	name: 'sayamaapps/tegaru',
+	extends: [
+		'translations' => require __DIR__ . '/config/translations.php',
+		'api'          => require __DIR__ . '/config/api.php',
+		'hooks'        => require __DIR__ . '/config/hooks.php',
 	],
-
-	/**
-	 * The safety net. `$upload` is the file still in PHP's tmp directory;
-	 * an exception here cancels the upload (or the replacement) and the
-	 * Panel shows its message.
-	 */
-	'hooks' => [
-		'file.create:before' => function (File $file, Upload $upload): void {
-			tegaru_guard(App::instance(), $upload);
-		},
-		'file.replace:before' => function (File $file, Upload $upload): void {
-			tegaru_guard(App::instance(), $upload);
-		},
-	],
-]);
+	root: __DIR__
+);

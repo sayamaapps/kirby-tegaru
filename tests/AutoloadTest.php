@@ -10,37 +10,37 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class AutoloadTest extends TestCase
 {
-    public function testEveryEntryLoadsItsClass(): void
-    {
-        $root = dirname(__DIR__);
-        foreach (require $root . '/autoload.php' as $class => $path) {
-            $this->assertFileExists($root . '/' . $path);
-            $this->assertTrue(class_exists($class), 'class ' . $class . ' loads through the map');
-        }
-    }
+	public function testEveryEntryLoadsItsClass(): void
+	{
+		$root = dirname(__DIR__);
+		foreach (require $root . '/autoload.php' as $class => $path) {
+			$this->assertFileExists($root . '/' . $path);
+			$this->assertTrue(class_exists($class), 'class ' . $class . ' loads through the map');
+		}
+	}
 
-    public function testTheOldNamesAreAliasesOfTheNewClasses(): void
-    {
-        require_once dirname(__DIR__) . '/legacy.php';
+	public function testTheMapListsEveryClassFileAndNothingElse(): void
+	{
+		$root = dirname(__DIR__);
+		$expected = [];
+		foreach (glob($root . '/src/*.php') ?: [] as $file) {
+			$expected[strtolower('sayamaapps\\tegaru\\' . basename($file, '.php'))] = 'src/' . basename($file);
+		}
 
-        foreach (require dirname(__DIR__) . '/autoload.php' as $class => $path) {
-            $short = substr($class, strlen('sayamaapps\\tegaru\\'));
-            $this->assertSame(
-                strtolower('Sayamaapps\\Tegaru\\' . $short),
-                strtolower((new ReflectionClass('Tegaru\\' . $short))->getName()),
-                'Tegaru\\' . $short . ' is an alias of the new class'
-            );
-        }
-    }
+		$this->assertSame($expected, require $root . '/autoload.php');
+	}
 
-    public function testTheMapListsEveryClassFileAndNothingElse(): void
-    {
-        $root = dirname(__DIR__);
-        $expected = [];
-        foreach (glob($root . '/src/*.php') ?: [] as $file) {
-            $expected[strtolower('sayamaapps\\tegaru\\' . basename($file, '.php'))] = 'src/' . basename($file);
-        }
+	public function testTheOldNamesAreAliasesOfTheNewClasses(): void
+	{
+		require_once dirname(__DIR__) . '/legacy.php';
 
-        $this->assertSame($expected, require $root . '/autoload.php');
-    }
+		foreach (require dirname(__DIR__) . '/autoload.php' as $class => $path) {
+			$short = substr($class, strlen('sayamaapps\\tegaru\\'));
+			$this->assertSame(
+				strtolower('Sayamaapps\\Tegaru\\' . $short),
+				strtolower((new ReflectionClass('Tegaru\\' . $short))->getName()),
+				'Tegaru\\' . $short . ' is an alias of the new class'
+			);
+		}
+	}
 }
