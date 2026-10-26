@@ -1,8 +1,8 @@
 # Tegaru — SPEC (Phase 1)
 
 Contract for the build. Sections A, B and C below each name the files they
-own; change only those. `index.php`, `src/Options.php`, `src/I18n.php`, this
-file and the CI are shared.
+own; change only those. `index.php`, `config/`, `src/Options.php`, `src/I18n.php`,
+this file and the CI are shared.
 
 Public interface, option names, code, comments and docs are English.
 Messages ship in English and German (English first, same keys; see
@@ -56,7 +56,7 @@ server byte-identical, only split into chunks when it exceeds
 - Nothing stored in the browser, no address of any host, no `eval`. CI
   greps for all three.
 
-## Options (`site/config/config.php`, all under `tegaru.`)
+## Options (`site/config/config.php`, under `sayamaapps.tegaru.`; the 1.x name `tegaru.` still works as fallback)
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -289,7 +289,7 @@ check counter, no PHPUnit (see `tests/run.sh`; copy the style of the
 sibling package `kirby-shoji/tests/*.php` — I18nTest and KirbyTest there
 show the i18n checks and how to boot a throwaway Kirby with a plugin).
 
-The hook in `index.php` (`tegaru_guard()`) runs on `file.create:before` and on
+The hook (`Hooks::guard()`, registered in `config/hooks.php`) runs on `file.create:before` and on
 `file.replace:before`. Both pass `(File, Upload)`; the upload is the file in PHP's
 tmp directory (for a replacement: the source of `replace()`).
 
@@ -334,7 +334,7 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   `require index.php` **before** `new App(...)` — `App::plugin()` fills a
   static registry that the App reads while it is built; registered later,
   the routes and translations are missing (verified on Kirby 5.6.1). Pass
-  `roots` to a temp dir and `options`: (a) `tegaru.active` off → `tegaru_guard()` returns for a 20-MB
+  `roots` to a temp dir and `options`: (a) `sayamaapps.tegaru.active` off → `Hooks::guard()` returns for a 20-MB
   temp file; (b) on → throws `InvalidArgumentException` whose message is the
   German text when the site's default language is `de`, English otherwise;
   (c) the plugin translations contain `tegaru.error.size` in `en` and `de`;
