@@ -8,6 +8,7 @@ use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\File as Upload;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
+use Sayamaapps\Tegaru\Hooks;
 use Sayamaapps\Tegaru\Options;
 
 /**
@@ -80,7 +81,7 @@ final class KirbyTest extends TestCase
 	private function guard(App $kirby, string $path): string|null
 	{
 		try {
-			tegaru_guard($kirby, new Upload($path));
+			Hooks::guard($kirby, new Upload($path));
 			return null;
 		} catch (InvalidArgumentException $e) {
 			return $e->getMessage();

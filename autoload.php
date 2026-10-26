@@ -8,6 +8,7 @@
 
 return [
 	'sayamaapps\\tegaru\\guard' => 'src/Guard.php',
+	'sayamaapps\\tegaru\\hooks' => 'src/Hooks.php',
 	'sayamaapps\\tegaru\\i18n' => 'src/I18n.php',
 	'sayamaapps\\tegaru\\options' => 'src/Options.php',
 ];

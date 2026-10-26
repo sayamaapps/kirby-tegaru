@@ -51,6 +51,12 @@ final class Options
 		return self::get($kirby, 'active', false) === true;
 	}
 
+	/** Sets I18n's language for this request from language(). Called before any message is built. */
+	public static function applyLanguage(App $kirby): void
+	{
+		I18n::setLanguage(self::language($kirby));
+	}
+
 	/**
 	 * What the Panel script needs, as the options route returns it
 	 * (`GET /api/tegaru/options`, Panel users only).

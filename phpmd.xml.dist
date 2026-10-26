@@ -6,7 +6,10 @@
 	xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
 	<description>PHP Mess Detector rules for Tegaru. Every exclusion and raised threshold has its reason here.</description>
 
-	<rule ref="rulesets/cleancode.xml" />
+	<rule ref="rulesets/cleancode.xml">
+		<!-- Options, I18n and Guard are static helpers, as Kirby's own toolkit is. -->
+		<exclude name="StaticAccess" />
+	</rule>
 
 	<rule ref="rulesets/codesize.xml" />
 

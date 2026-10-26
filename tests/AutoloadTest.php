@@ -34,8 +34,8 @@ final class AutoloadTest extends TestCase
 	{
 		require_once dirname(__DIR__) . '/legacy.php';
 
-		foreach (require dirname(__DIR__) . '/autoload.php' as $class => $path) {
-			$short = substr($class, strlen('sayamaapps\\tegaru\\'));
+		// The classes of 1.x. Hooks is new in this version and has no old name.
+		foreach (['Guard', 'I18n', 'Options'] as $short) {
 			$this->assertSame(
 				strtolower('Sayamaapps\\Tegaru\\' . $short),
 				strtolower((new ReflectionClass('Tegaru\\' . $short))->getName()),
