@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\App;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Sayamaapps\Tegaru\I18n;
@@ -13,6 +14,11 @@ use Sayamaapps\Tegaru\I18n;
 #[CoversClass(I18n::class)]
 final class I18nTest extends TestCase
 {
+	protected function tearDown(): void
+	{
+		App::destroy();
+	}
+
 	/** The placeholder names of a text, sorted and unique. */
 	private static function placeholders(string $text): array
 	{

@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\App;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -13,6 +14,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class PanelSignatureTest extends TestCase
 {
+	protected function tearDown(): void
+	{
+		App::destroy();
+	}
+
 	public function testKirbyPanelStillHasTheFilesFieldMembersThatIndexJsExtends(): void
 	{
 		// The files field extension: Kirby resolves a plugin's

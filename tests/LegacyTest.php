@@ -63,6 +63,7 @@ final class LegacyTest extends TestCase
 
 	protected function tearDown(): void
 	{
+		App::destroy();
 		Dir::remove($this->tmp);
 	}
 

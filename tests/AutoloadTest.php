@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\App;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 
@@ -10,6 +11,11 @@ use PHPUnit\Framework\TestCase;
 #[CoversNothing]
 final class AutoloadTest extends TestCase
 {
+	protected function tearDown(): void
+	{
+		App::destroy();
+	}
+
 	public function testEveryEntryLoadsItsClass(): void
 	{
 		$root = dirname(__DIR__);

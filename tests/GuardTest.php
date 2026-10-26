@@ -1,5 +1,6 @@
 <?php
 
+use Kirby\Cms\App;
 use Kirby\Filesystem\Dir;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -49,6 +50,7 @@ final class GuardTest extends TestCase
 
 	protected function tearDown(): void
 	{
+		App::destroy();
 		Dir::remove($this->dir);
 	}
 

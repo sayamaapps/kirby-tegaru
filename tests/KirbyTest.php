@@ -100,16 +100,16 @@ final class KirbyTest extends TestCase
 		foreach (['public', 'content', 'site/templates', 'site/snippets', 'storage'] as $dir) {
 			mkdir($this->tmp . '/' . $dir, 0700, true);
 		}
-	}
 
-	public static function setUpBeforeClass(): void
-	{
-		// The plugin registers itself with App::plugin(); it must be loaded once before any App is built.
-		require_once dirname(__DIR__) . '/index.php';
+		// The plugin registers itself with App::plugin() before the App is built. App::destroy() in
+		// tearDown() empties that registry, so it is registered again for every test.
+		require dirname(__DIR__) . '/index.php';
 	}
 
 	protected function tearDown(): void
 	{
+		App::destroy();
+
 		// Kirby commits its sessions in a shutdown function registered during the checks, which runs
 		// before this one; removing the temp dir now would make that commit fail on the session file.
 		$tmp = $this->tmp;
