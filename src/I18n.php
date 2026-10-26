@@ -11,8 +11,11 @@ namespace Sayamaapps\Tegaru;
  * its own tables: a missing Kirby translation must never silently turn a
  * German message English.
  *
- * The language is set once per request (Options::language()) and defaults
- * to English. Missing keys fall back to English, then to the key.
+ * The language is static state, set by Options::applyLanguage() before a
+ * message is built (Hooks::guard() does so first). Every read follows a set,
+ * so a value left by an earlier request in the same PHP worker is never
+ * read. The default is English; missing keys fall back to English, then to
+ * the key.
  *
  * @package   Kirby Tegaru
  * @author    Simon Räder
