@@ -1,0 +1,18 @@
+{
+	"scan-files": [
+		"index.php",
+		"legacy.php",
+		"autoload.php",
+		"config/*.php",
+		"src/*.php"
+	],
+	"symbol-whitelist": [
+		"Kirby",
+		"Kirby\\Cms\\App",
+		"Kirby\\Cms\\File",
+		"Kirby\\Cms\\Helpers",
+		"Kirby\\Exception\\InvalidArgumentException",
+		"Kirby\\Filesystem\\F",
+		"Kirby\\Filesystem\\File"
+	]
+}

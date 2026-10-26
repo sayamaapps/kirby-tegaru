@@ -43,7 +43,7 @@ final class PanelSignatureTest extends TestCase
 
     public function testKirbyPanelStillHasTheFilesFieldMembersThatIndexJsExtends(): void
     {
-        // The files field extension (SPEC section D): Kirby resolves a plugin's
+        // The files field extension: Kirby resolves a plugin's
         // extends string to the registered component, the files field has its
         // Upload button's members, and the empty field and the Select button both
         // call open(). Patterns allow other variable names of the minifier.

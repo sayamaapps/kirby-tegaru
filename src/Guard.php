@@ -7,7 +7,7 @@ namespace Tegaru;
  * and says whether it may be created. The caller (index.php, hook
  * `file.create:before`) turns a violation into the exception the Panel shows.
  *
- * Rules (SPEC.md, section B), checked in this order; the first violation wins:
+ * Rules (see docs/SPEC.md), checked in this order; the first violation wins:
  *  - size:   filesize > $maxBytes             → ['key' => 'error.size',   'values' => ['size' => <MB>, 'max' => <MB>]]
  *  - heic:   magic bytes say HEIC/HEIF        → ['key' => 'error.heic',   'values' => []]
  *  - pixels: JPEG/PNG/GIF/WebP (by magic bytes) with width × height > $maxPixels

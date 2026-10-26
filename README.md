@@ -91,4 +91,4 @@ Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script.
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE.md](LICENSE.md).
