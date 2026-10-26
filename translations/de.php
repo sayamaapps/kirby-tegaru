@@ -1,6 +1,6 @@
 <?php
 
-// Tegarus Texte, Deutsch. Gleiche Schlüssel wie en.php (tests/I18nTest.php).
+// Tegaru's messages, German. Same keys as en.php (tests/I18nTest.php).
 return [
 	'error.size'      => 'Die Datei ist {size} MB groß, erlaubt sind {max} MB. Tipp: das Foto aus der Fotos-App hochladen, nicht aus „Dateien“.',
 	'error.pixels'    => 'Das Bild hat {megapixels} Megapixel, erlaubt sind {max}.',

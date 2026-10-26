@@ -284,10 +284,8 @@ hosts and `eval` — keep all three out.
 Files: `src/Guard.php` (replace the stub, keep the
 signatures), `tests/GuardTest.php`, `tests/OptionsTest.php`,
 `tests/I18nTest.php`, `tests/PanelSignatureTest.php`, `tests/KirbyTest.php`.
-Pattern for tests: standalone PHP scripts with `expect()`/`holds()` and a
-check counter, no PHPUnit (see `tests/run.sh`; copy the style of the
-sibling package `kirby-shoji/tests/*.php` — I18nTest and KirbyTest there
-show the i18n checks and how to boot a throwaway Kirby with a plugin).
+Pattern for tests: PHPUnit test classes with the `expect()`/`holds()` helpers
+of `tests/helpers.php`. KirbyTest boots a throwaway Kirby with the plugin.
 
 The hook (`Hooks::guard()`, registered in `config/hooks.php`) runs on `file.create:before` and on
 `file.replace:before`. Both pass `(File, Upload)`; the upload is the file in PHP's
@@ -350,7 +348,7 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
 ## Section C — Documentation (`README.md`, `CHANGELOG.md`)
 
 Files: the two above (README replaces the scaffold
-text). Style and structure follow `kirby-shoji` and `kirby-noren`: short
+text). Style and structure follow the Kirby plugin conventions: short
 intro with the Japanese word, Requirements, Installation (`composer require
 sayamaapps/kirby-tegaru`, the `repositories` entry while the package is not
 on Packagist), Configuration (the options table above), How it works (the
@@ -363,7 +361,7 @@ height: 2400, format: jpg }` as the server-side rule for uploads the script
 never sees), Browser support (Safari iOS/macOS, Chrome, Firefox: canvas
 path; HEIC is never converted), Limits (no server resizing,
 no HEIC conversion anywhere, GIF/SVG/PDF untouched), Development
-(`composer install`, `sh tests/run.sh`, `node --test tests/`).
+(`composer install`, `composer test`, `node --test tests/`).
 
 No privacy text: Tegaru processes no visitor data. The README's Privacy section says so in three sentences.
 
