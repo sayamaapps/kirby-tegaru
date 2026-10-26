@@ -9,7 +9,7 @@ All notable changes to this project are documented here. Versions follow
 - The options route (`/api/tegaru/options`) carries `format`; it increases
   only when a field is removed, renamed or changes meaning.
 
-## [Unreleased]
+## [1.1.1] — 2026-10-26
 
 ### Fixed
 
