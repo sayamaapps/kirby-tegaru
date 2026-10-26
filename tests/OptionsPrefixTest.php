@@ -104,16 +104,16 @@ final class OptionsPrefixTest extends TestCase
 		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
 	}
 
-	public function testThePrefixConstantsKeepTheirValues(): void
-	{
-		expect('tegaru.', Options::PREFIX, 'PREFIX is the 1.x prefix, unchanged for code that reads it');
-		expect('sayamaapps.tegaru.', Options::OPTION_PREFIX, 'OPTION_PREFIX is the prefix of the new names');
-	}
-
 	public function testTheOptionsBlockDeclaresEveryKeyWithANullDefault(): void
 	{
 		$block = require dirname(__DIR__) . '/config/options.php';
 		expect(['active', 'language', 'maxEdge', 'maxPixels', 'maxUploadBytes', 'minBytes', 'quality'], array_keys($block), 'the seven keys');
 		expect([null, null, null, null, null, null, null], array_values($block), 'null defaults: the 1.x fallback must stay visible');
+	}
+
+	public function testThePrefixConstantsKeepTheirValues(): void
+	{
+		expect('tegaru.', Options::PREFIX, 'PREFIX is the 1.x prefix, unchanged for code that reads it');
+		expect('sayamaapps.tegaru.', Options::OPTION_PREFIX, 'OPTION_PREFIX is the prefix of the new names');
 	}
 }

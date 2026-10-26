@@ -45,11 +45,11 @@ class Options
 	/** Format of the options route; it increases only when a field is removed, renamed or changes meaning. */
 	public const FORMAT = 1;
 
-	/** Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it. */
-	public const PREFIX = 'tegaru.';
-
 	/** Option prefix; `PREFIX` is read as the fallback until 2.0. */
 	public const OPTION_PREFIX = 'sayamaapps.tegaru.';
+
+	/** Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it. */
+	public const PREFIX = 'tegaru.';
 
 	/** Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing. */
 	public static function active(App $kirby): bool

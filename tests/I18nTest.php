@@ -14,11 +14,6 @@ use Sayamaapps\Tegaru\I18n;
 #[CoversClass(I18n::class)]
 final class I18nTest extends TestCase
 {
-	protected function tearDown(): void
-	{
-		App::destroy();
-	}
-
 	/** The placeholder names of a text, sorted and unique. */
 	private static function placeholders(string $text): array
 	{
@@ -26,6 +21,11 @@ final class I18nTest extends TestCase
 		$names = array_unique($matches[1]);
 		sort($names);
 		return $names;
+	}
+
+	protected function tearDown(): void
+	{
+		App::destroy();
 	}
 
 	public function testEnglishPlaceholdersAreFilledInAndValuesAreNotEscaped(): void
