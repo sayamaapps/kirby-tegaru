@@ -2,7 +2,7 @@
 
 Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 5 Panel.
 
-**Versions:** Kirby 5 · PHP 8.2 to 8.5 · MIT · [Changes](CHANGELOG.md)
+**Versions:** Kirby 5 · PHP 8.2 to 8.5 · MIT · [Changes](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md)
 
 *Tegaru* (手軽) is Japanese for "easy, light to handle". A 24-megapixel phone photo weighs 3–4 MB and often carries its GPS position, so Tegaru resizes it in the browser before the upload starts. The upload is typically about 1 MB, and the re-encoded file carries no location data.
 
@@ -114,7 +114,7 @@ Tegaru processes no visitor data. Nothing is stored in the browser, and nothing 
 
 ## Maintenance
 
-Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Server messages come from Tegaru's own tables in `translations/`, not from Kirby's translation layer, so a refused upload reads the same whatever the Kirby translation setup is. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](CHANGELOG.md).
+Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Server messages come from Tegaru's own tables in `translations/`, not from Kirby's translation layer, so a refused upload reads the same whatever the Kirby translation setup is. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
 
 ## License
 

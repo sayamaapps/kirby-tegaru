@@ -9,6 +9,22 @@ All notable changes to this project are documented here. Versions follow
 - The options route (`/api/tegaru/options`) carries `format`; it increases
   only when a field is removed, renamed or changes meaning.
 
+## [Unreleased]
+
+### Added
+
+- `Sayamaapps\Tegaru\Hooks::guard()`, the upload check of the hooks, and `Sayamaapps\Tegaru\Options::applyLanguage()`, which sets the language of the server messages.
+- Options are read as `sayamaapps.tegaru.<name>`. The 1.x spelling `tegaru.<name>` keeps working as fallback.
+
+### Changed
+
+- The classes live in the `Sayamaapps\Tegaru\` namespace and load through a class map. The 1.x class names are aliases.
+- `index.php` registers the plugin with `Kirby::plugin()`; options, translations, the API route and the hooks are defined in `config/`.
+
+### Deprecated
+
+- `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), the `tegaru.<name>` option spelling and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. Removal is planned for 2.0. Debug mode reports each use once per request.
+
 ## [1.1.1] — 2026-10-26
 
 ### Fixed
