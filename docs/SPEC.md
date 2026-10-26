@@ -1,8 +1,9 @@
-# Tegaru — SPEC (Phase 1)
+# Tegaru — specification
 
-Contract for the build. Sections A, B and C below each name the files they
-own; change only those. `index.php`, `config/`, `src/Options.php`, `src/I18n.php`,
-this file and the CI are shared.
+This document is the specification the code follows. Sections A, B and C each
+name the files they own, and a change to one of them touches only those files.
+`index.php`, `config/`, `src/Options.php`, `src/I18n.php`, this file and the CI
+are shared by all three.
 
 Public interface, option names, code, comments and docs are English.
 Messages ship in English and German (English first, same keys; see
@@ -33,7 +34,7 @@ Kirby itself (`panel.upload`) does not touch the bytes: a file goes to the
 server byte-identical, only split into chunks when it exceeds
 `upload_max_filesize`. Kirby cannot resize, thumbnail or even open HEIC.
 
-## What Tegaru does NOT do (Phase 1)
+## What Tegaru does NOT do
 
 - No server-side resizing. That is the blueprint's `create:` option
   (`create: { width: 2400, height: 2400, format: jpg }`), which also covers
@@ -297,7 +298,7 @@ Kirby-free. Returns `null` (allowed) or `['key' => …, 'values' => […]]`:
 
 1. `filesize($path) > $maxBytes` → `error.size` with `size` and `max` in MB,
    one decimal (`'3.7'`, `'15.0'`), as strings, point as decimal separator
-   (the translation does not localise numbers in Phase 1).
+   (the translation does not localise numbers yet).
 2. first 32 bytes: `Guard::sniff($head)`; `heic` → `error.heic`, no values.
 3. `jpeg|png|gif|webp` → `getimagesize($path)`; if it fails → `null`
    (Kirby's own checks take over); if `width × height > $maxPixels` →
