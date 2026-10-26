@@ -2,7 +2,7 @@
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Tegaru\I18n;
+use Sayamaapps\Tegaru\I18n;
 
 /**
  * Translations: every language has the same keys and placeholders as

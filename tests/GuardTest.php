@@ -3,7 +3,7 @@
 use Kirby\Filesystem\Dir;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Tegaru\Guard;
+use Sayamaapps\Tegaru\Guard;
 
 /**
  * Guard::inspect() and Guard::sniff(), Kirby-free. Fixtures are made at run

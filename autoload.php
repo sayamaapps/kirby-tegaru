@@ -7,7 +7,7 @@
  */
 
 return [
-	'tegaru\\guard' => 'src/Guard.php',
-	'tegaru\\i18n' => 'src/I18n.php',
-	'tegaru\\options' => 'src/Options.php',
+	'sayamaapps\\tegaru\\guard' => 'src/Guard.php',
+	'sayamaapps\\tegaru\\i18n' => 'src/I18n.php',
+	'sayamaapps\\tegaru\\options' => 'src/Options.php',
 ];

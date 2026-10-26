@@ -1,6 +1,6 @@
 <?php
 
-namespace Tegaru;
+namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
 

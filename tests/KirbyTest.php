@@ -8,7 +8,7 @@ use Kirby\Filesystem\Dir;
 use Kirby\Filesystem\File as Upload;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
-use Tegaru\Options;
+use Sayamaapps\Tegaru\Options;
 
 /**
  * The plugin with real Kirby, in a throwaway directory. index.php is

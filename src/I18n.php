@@ -1,6 +1,6 @@
 <?php
 
-namespace Tegaru;
+namespace Sayamaapps\Tegaru;
 
 /**
  * Strings of the server-side messages, Kirby-free.

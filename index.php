@@ -7,10 +7,11 @@ use Kirby\Filesystem\F;
 use Kirby\Filesystem\File as Upload;
 
 F::loadClasses(require __DIR__ . '/autoload.php', __DIR__);
+require_once __DIR__ . '/legacy.php';
 
-use Tegaru\Guard;
-use Tegaru\I18n;
-use Tegaru\Options;
+use Sayamaapps\Tegaru\Guard;
+use Sayamaapps\Tegaru\I18n;
+use Sayamaapps\Tegaru\Options;
 
 /**
  * Tegaru (手軽, "light to handle") — photos from the phone reach the Panel

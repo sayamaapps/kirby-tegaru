@@ -4,7 +4,7 @@ use Kirby\Cms\App;
 use Kirby\Filesystem\Dir;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Tegaru\Options;
+use Sayamaapps\Tegaru\Options;
 
 /**
  * Options with a throwaway Kirby app: defaults, flat and nested spelling,

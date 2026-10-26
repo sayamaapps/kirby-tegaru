@@ -1,6 +1,6 @@
 <?php
 
-namespace Tegaru;
+namespace Sayamaapps\Tegaru;
 
 /**
  * The server-side safety net, Kirby-free: looks at an uploaded file on disk
