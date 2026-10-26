@@ -3,11 +3,10 @@
 use Kirby\Cms\App;
 use Kirby\Cms\File;
 use Kirby\Exception\InvalidArgumentException;
+use Kirby\Filesystem\F;
 use Kirby\Filesystem\File as Upload;
 
-require_once __DIR__ . '/src/I18n.php';
-require_once __DIR__ . '/src/Options.php';
-require_once __DIR__ . '/src/Guard.php';
+F::loadClasses(require __DIR__ . '/autoload.php', __DIR__);
 
 use Tegaru\Guard;
 use Tegaru\I18n;

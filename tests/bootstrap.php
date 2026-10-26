@@ -3,9 +3,7 @@
 $base = dirname(__DIR__);
 require $base . '/vendor/autoload.php';
 
-require_once $base . '/src/I18n.php';
-require_once $base . '/src/Options.php';
-require_once $base . '/src/Guard.php';
+Kirby\Filesystem\F::loadClasses(require $base . '/autoload.php', $base);
 require_once __DIR__ . '/helpers.php';
 
 // Kirby's Whoops error handler stays registered after every App is created, so
