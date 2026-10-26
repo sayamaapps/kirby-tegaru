@@ -12,7 +12,10 @@ class_alias(\Sayamaapps\Tegaru\I18n::class, 'Tegaru\\I18n');
 class_alias(\Sayamaapps\Tegaru\Options::class, 'Tegaru\\Options');
 
 if (Kirby\Cms\Helpers::hasOverride('tegaru_i18n') === false) {
-	/** Sets the language of the messages. Deprecated: use Sayamaapps\Tegaru\Options::applyLanguage(). */
+	/**
+	 * Sets the language of the messages. Deprecated: use Sayamaapps\Tegaru\Options::applyLanguage().
+	 * @since 1.0.0
+	 */
 	function tegaru_i18n(): void
 	{
 		Kirby\Cms\Helpers::deprecated(
@@ -25,7 +28,10 @@ if (Kirby\Cms\Helpers::hasOverride('tegaru_i18n') === false) {
 }
 
 if (Kirby\Cms\Helpers::hasOverride('tegaru_guard') === false) {
-	/** The upload check of the hooks. Deprecated: use Sayamaapps\Tegaru\Hooks::guard(). */
+	/**
+	 * The upload check of the hooks. Deprecated: use Sayamaapps\Tegaru\Hooks::guard().
+	 * @since 1.0.0
+	 */
 	function tegaru_guard(Kirby\Cms\App $kirby, Kirby\Filesystem\File $upload): void
 	{
 		Kirby\Cms\Helpers::deprecated(

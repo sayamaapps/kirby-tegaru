@@ -26,13 +26,17 @@ namespace Sayamaapps\Tegaru;
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
  * @license   https://opensource.org/licenses/MIT
+ * @since 1.0.0
  */
 class Guard
 {
 	/** Bytes read from the start of a file; every magic number used here fits. */
 	private const HEAD_BYTES = 32;
 
-	/** HEIC/HEIF brands in the `ftyp` box; also mif1/msf1 containers. */
+	/**
+	 * HEIC/HEIF brands in the `ftyp` box; also mif1/msf1 containers.
+	 * @since 1.0.0
+	 */
 	public const HEIC_BRANDS = ['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1'];
 	private const MEGAPIXEL = 1000000;
 	private const MIB = 1048576;
@@ -41,6 +45,7 @@ class Guard
 	 * Checks an uploaded file. Null means the file may be created.
 	 *
 	 * @return array{key:string,values:array<string,string>}|null
+	 * @since 1.0.0
 	 */
 	public static function inspect(string $path, int $maxBytes, int $maxPixels): array|null
 	{
@@ -96,7 +101,10 @@ class Guard
 		];
 	}
 
-	/** 'jpeg' | 'png' | 'gif' | 'webp' | 'heic' | 'avif' | 'other', from the first bytes. */
+	/**
+	 * 'jpeg' | 'png' | 'gif' | 'webp' | 'heic' | 'avif' | 'other', from the first bytes.
+	 * @since 1.0.0
+	 */
 	public static function sniff(string $head): string
 	{
 		$head = substr($head, 0, self::HEAD_BYTES);

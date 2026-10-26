@@ -25,37 +25,62 @@ use WeakMap;
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
  * @license   https://opensource.org/licenses/MIT
+ * @since 1.0.0
  */
 class Options
 {
-	/** Longest edge of the browser-side result, in pixels. */
+	/**
+	 * Longest edge of the browser-side result, in pixels.
+	 * @since 1.0.0
+	 */
 	public const DEFAULT_MAX_EDGE = 2400;
 
-	/** Server cap: pixels (width × height) per uploaded raster image. */
+	/**
+	 * Server cap: pixels (width × height) per uploaded raster image.
+	 * @since 1.0.0
+	 */
 	public const DEFAULT_MAX_PIXELS = 40000000;
 
-	/** Server cap: bytes per uploaded file. */
+	/**
+	 * Server cap: bytes per uploaded file.
+	 * @since 1.0.0
+	 */
 	public const DEFAULT_MAX_UPLOAD_BYTES = 15728640;
 
-	/** Files below this size are not touched in the browser. */
+	/**
+	 * Files below this size are not touched in the browser.
+	 * @since 1.0.0
+	 */
 	public const DEFAULT_MIN_BYTES = 1048576;
 
-	/** JPEG quality of the browser-side result, 0–1. */
+	/**
+	 * JPEG quality of the browser-side result, 0–1.
+	 * @since 1.0.0
+	 */
 	public const DEFAULT_QUALITY = 0.85;
 
-	/** Format of the options route; it increases only when a field is removed, renamed or changes meaning. */
+	/**
+	 * Format of the options route; it increases only when a field is removed, renamed or changes meaning.
+	 * @since 1.0.0
+	 */
 	public const FORMAT = 1;
 
 	/** Option prefix; `PREFIX` is read as the fallback until 2.0. */
 	public const OPTION_PREFIX = 'sayamaapps.tegaru.';
 
-	/** Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it. */
+	/**
+	 * Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it.
+	 * @since 1.0.0
+	 */
 	public const PREFIX = 'tegaru.';
 
 	/** Keys whose 1.x spelling was already reported, per App. Weak, so a destroyed App is forgotten. */
-	private static ?WeakMap $reported = null;
+	private static WeakMap|null $reported = null;
 
-	/** Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing. */
+	/**
+	 * Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing.
+	 * @since 1.0.0
+	 */
 	public static function active(App $kirby): bool
 	{
 		return self::get($kirby, 'active', false) === true;
@@ -72,6 +97,7 @@ class Options
 	 * (`GET /api/tegaru/options`, Panel users only).
 	 *
 	 * @return array{format:int,active:bool,maxEdge:int,quality:float,minBytes:int,maxUploadBytes:int,maxPixels:int,language:string}
+	 * @since 1.0.0
 	 */
 	public static function forPanel(App $kirby): array
 	{
@@ -91,6 +117,7 @@ class Options
 	/**
 	 * The value of an option: `sayamaapps.tegaru.<key>`, else the 1.x
 	 * `tegaru.<key>` (reported as deprecated in debug mode), else $default.
+	 * @since 1.0.0
 	 */
 	public static function get(App $kirby, string $key, mixed $default = null): mixed
 	{
@@ -109,29 +136,10 @@ class Options
 	}
 
 	/**
-	 * Reports the 1.x spelling of a key once per App, not once per read: the
-	 * Panel route and the hooks read the same keys again in one request.
-	 */
-	private static function reportLegacy(App $kirby, string $key): void
-	{
-		self::$reported ??= new WeakMap();
-		$seen = self::$reported[$kirby] ?? [];
-		if (isset($seen[$key])) {
-			return;
-		}
-		$seen[$key] = true;
-		self::$reported[$kirby] = $seen;
-
-		Helpers::deprecated(
-			'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
-			'option-prefix'
-		);
-	}
-
-	/**
 	 * Language of the messages: `tegaru.language`, otherwise the site's
 	 * default language, otherwise the first two letters of Kirby's `locale`
 	 * option, otherwise English. Only languages Tegaru ships are returned.
+	 * @since 1.0.0
 	 */
 	public static function language(App $kirby): string
 	{
@@ -155,25 +163,37 @@ class Options
 		return 'en';
 	}
 
-	/** Longest edge of the browser-side result in pixels; the default when not a positive integer. */
+	/**
+	 * Longest edge of the browser-side result in pixels; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
 	public static function maxEdge(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxEdge', self::DEFAULT_MAX_EDGE);
 	}
 
-	/** Server cap in pixels (width × height) per raster image; the default when not a positive integer. */
+	/**
+	 * Server cap in pixels (width × height) per raster image; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
 	public static function maxPixels(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxPixels', self::DEFAULT_MAX_PIXELS);
 	}
 
-	/** Server cap in bytes per uploaded file; the default when not a positive integer. */
+	/**
+	 * Server cap in bytes per uploaded file; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
 	public static function maxUploadBytes(App $kirby): int
 	{
 		return self::positiveInt($kirby, 'maxUploadBytes', self::DEFAULT_MAX_UPLOAD_BYTES);
 	}
 
-	/** Files below this size in bytes are left alone in the browser; the default when not a non-negative integer. */
+	/**
+	 * Files below this size in bytes are left alone in the browser; the default when not a non-negative integer.
+	 * @since 1.0.0
+	 */
 	public static function minBytes(App $kirby): int
 	{
 		return self::nonNegativeInt($kirby, 'minBytes', self::DEFAULT_MIN_BYTES);
@@ -191,7 +211,10 @@ class Options
 		return is_int($value) && $value > 0 ? $value : $default;
 	}
 
-	/** Quality is clamped to 0.1–1.0; anything else falls back to the default. */
+	/**
+	 * Quality is clamped to 0.1–1.0; anything else falls back to the default.
+	 * @since 1.0.0
+	 */
 	public static function quality(App $kirby): float
 	{
 		$value = self::get($kirby, 'quality', self::DEFAULT_QUALITY);
@@ -200,5 +223,25 @@ class Options
 		}
 		$value = (float)$value;
 		return $value >= 0.1 && $value <= 1.0 ? $value : self::DEFAULT_QUALITY;
+	}
+
+	/**
+	 * Reports the 1.x spelling of a key once per App, not once per read: the
+	 * Panel route and the hooks read the same keys again in one request.
+	 */
+	private static function reportLegacy(App $kirby, string $key): void
+	{
+		self::$reported ??= new WeakMap();
+		$seen = self::$reported[$kirby] ?? [];
+		if (isset($seen[$key])) {
+			return;
+		}
+		$seen[$key] = true;
+		self::$reported[$kirby] = $seen;
+
+		Helpers::deprecated(
+			'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
+			'option-prefix'
+		);
 	}
 }

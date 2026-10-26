@@ -86,24 +86,6 @@ final class OptionsPrefixTest extends TestCase
 		expect([], $deprecations, 'the old spelling is not read, so nothing is reported');
 	}
 
-	public function testTheOldSpellingIsSilentOutsideDebugMode(): void
-	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['tegaru.active' => true]);
-			expect(true, Options::active($kirby), 'tegaru.active is read without debug');
-		});
-		expect([], $deprecations, 'no deprecation without debug mode');
-	}
-
-	public function testTheOldSpellingStillWorksAndIsDeprecatedInDebugMode(): void
-	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
-			expect(true, Options::active($kirby), 'tegaru.active is read as fallback');
-		});
-		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
-	}
-
 	public function testTheOldSpellingIsReportedOncePerKeyAndApp(): void
 	{
 		$deprecations = $this->collectDeprecations(function (): void {
@@ -123,6 +105,24 @@ final class OptionsPrefixTest extends TestCase
 			$deprecations,
 			'one report per App; a second App reports again'
 		);
+	}
+
+	public function testTheOldSpellingIsSilentOutsideDebugMode(): void
+	{
+		$deprecations = $this->collectDeprecations(function (): void {
+			$kirby = $this->app(['tegaru.active' => true]);
+			expect(true, Options::active($kirby), 'tegaru.active is read without debug');
+		});
+		expect([], $deprecations, 'no deprecation without debug mode');
+	}
+
+	public function testTheOldSpellingStillWorksAndIsDeprecatedInDebugMode(): void
+	{
+		$deprecations = $this->collectDeprecations(function (): void {
+			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
+			expect(true, Options::active($kirby), 'tegaru.active is read as fallback');
+		});
+		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
 	}
 
 	public function testTheOptionsBlockDeclaresEveryKeyWithANullDefault(): void

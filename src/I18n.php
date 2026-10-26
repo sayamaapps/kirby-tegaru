@@ -22,10 +22,14 @@ namespace Sayamaapps\Tegaru;
  * @link      https://github.com/sayamaapps/kirby-tegaru
  * @copyright Simon Räder
  * @license   https://opensource.org/licenses/MIT
+ * @since 1.0.0
  */
 class I18n
 {
-	/** Languages Tegaru ships. English is the default and the fallback. */
+	/**
+	 * Languages Tegaru ships. English is the default and the fallback.
+	 * @since 1.0.0
+	 */
 	public const LANGUAGES = ['en', 'de'];
 
 	private static string $language = 'en';
@@ -50,19 +54,28 @@ class I18n
 		return $translations;
 	}
 
-	/** The language the messages are built in: the one set by setLanguage(), English by default. */
+	/**
+	 * The language the messages are built in: the one set by setLanguage(), English by default.
+	 * @since 1.0.0
+	 */
 	public static function language(): string
 	{
 		return self::$language;
 	}
 
-	/** Sets the language of later t() calls. A language Tegaru does not ship becomes English. */
+	/**
+	 * Sets the language of later t() calls. A language Tegaru does not ship becomes English.
+	 * @since 1.0.0
+	 */
 	public static function setLanguage(string $language): void
 	{
 		self::$language = in_array($language, self::LANGUAGES, true) ? $language : 'en';
 	}
 
-	/** `{name}` placeholders are replaced with the given values, unescaped. */
+	/**
+	 * `{name}` placeholders are replaced with the given values, unescaped.
+	 * @since 1.0.0
+	 */
 	public static function t(string $key, array $values = []): string
 	{
 		$text = self::table(self::$language)[$key] ?? self::table('en')[$key] ?? $key;
@@ -76,7 +89,10 @@ class I18n
 		return strtr($text, $pairs);
 	}
 
-	/** @return array<string,string> */
+	/**
+	 * @return array<string,string>
+	 * @since 1.0.0
+	 */
 	public static function table(string $language): array
 	{
 		if (!in_array($language, self::LANGUAGES, true)) {
