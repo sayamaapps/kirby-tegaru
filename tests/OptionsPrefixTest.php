@@ -104,6 +104,27 @@ final class OptionsPrefixTest extends TestCase
 		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
 	}
 
+	public function testTheOldSpellingIsReportedOncePerKeyAndApp(): void
+	{
+		$deprecations = $this->collectDeprecations(function (): void {
+			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
+			Options::active($kirby);
+			Options::active($kirby);
+			Options::forPanel($kirby);
+			expect(true, Options::active($kirby), 'tegaru.active keeps being read as fallback');
+
+			Options::active($this->app(['debug' => true, 'tegaru.active' => true]));
+		});
+		expect(
+			[
+				'Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active',
+				'Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active',
+			],
+			$deprecations,
+			'one report per App; a second App reports again'
+		);
+	}
+
 	public function testTheOptionsBlockDeclaresEveryKeyWithANullDefault(): void
 	{
 		$block = require dirname(__DIR__) . '/config/options.php';

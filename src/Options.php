@@ -4,6 +4,7 @@ namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
 use Kirby\Cms\Helpers;
+use WeakMap;
 
 /**
  * Reads Tegaru's options: `sayamaapps.tegaru.<key>`, falling back to the 1.x
@@ -50,6 +51,9 @@ class Options
 
 	/** Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it. */
 	public const PREFIX = 'tegaru.';
+
+	/** Keys whose 1.x spelling was already reported, per App. Weak, so a destroyed App is forgotten. */
+	private static ?WeakMap $reported = null;
 
 	/** Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing. */
 	public static function active(App $kirby): bool
@@ -98,13 +102,30 @@ class Options
 		// The 1.x spelling still works, with a deprecation (README, Deprecations).
 		$legacy = $kirby->option(self::PREFIX . $key);
 		if ($legacy !== null) {
-			Helpers::deprecated(
-				'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
-				'option-prefix'
-			);
+			self::reportLegacy($kirby, $key);
 		}
 
 		return $legacy ?? $default;
+	}
+
+	/**
+	 * Reports the 1.x spelling of a key once per App, not once per read: the
+	 * Panel route and the hooks read the same keys again in one request.
+	 */
+	private static function reportLegacy(App $kirby, string $key): void
+	{
+		self::$reported ??= new WeakMap();
+		$seen = self::$reported[$kirby] ?? [];
+		if (isset($seen[$key])) {
+			return;
+		}
+		$seen[$key] = true;
+		self::$reported[$kirby] = $seen;
+
+		Helpers::deprecated(
+			'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
+			'option-prefix'
+		);
 	}
 
 	/**
