@@ -25,6 +25,10 @@ All notable changes to this project are documented here. Versions follow
 
 - `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), the `tegaru.<name>` option spelling and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. Removal is planned for 2.0. Debug mode reports each call of `tegaru_guard()` and `tegaru_i18n()`, and the `tegaru.<name>` option spelling once per request and key. The class names report nothing.
 
+### Fixed
+
+- A JPEG with damaged markers is checked for its size without a PHP warning. In Kirby's debug mode that warning failed the upload, although the file is allowed.
+
 ## [1.1.1] — 2026-10-26
 
 ### Fixed

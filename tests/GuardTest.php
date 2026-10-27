@@ -54,6 +54,16 @@ final class GuardTest extends TestCase
 		Dir::remove($this->dir);
 	}
 
+	public function testADamagedJpegIsCheckedWithoutAWarning(): void
+	{
+		// 267 junk bytes before the frame marker: getimagesize() still reads the size, but warns.
+		$bytes = file_get_contents($this->raster('jpg', 1500, 1000));
+		$frame = strpos($bytes, "\xFF\xC0");
+		$damaged = $this->write('damaged.jpg', substr($bytes, 0, $frame) . str_repeat('A', 267) . substr($bytes, $frame));
+		expect(null, $this->inspect($damaged), 'damaged JPEG under the defaults passes without a warning');
+		expect(['key' => 'error.pixels', 'values' => ['megapixels' => '1.5', 'max' => '1.0']], $this->inspect($damaged, 15 * self::MIB, self::MP), 'damaged JPEG still checked for pixels');
+	}
+
 	public function testChecksRunInOrderSizeThenHeicThenPixels(): void
 	{
 		$heicBig = $this->write('huge.heic', self::HEIC_HEAD . str_repeat("\0", 2 * self::MIB));
