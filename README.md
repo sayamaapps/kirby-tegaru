@@ -97,7 +97,7 @@ Example: `'sayamaapps.tegaru.maxEdge' => 1920,`
 
 ## Deprecations
 
-Deprecated in this release, removed in 2.0 (planned). Each replacement works now; the old names keep working until then, and debug mode reports their use.
+Deprecated in this release, removed in 2.0 (planned). Each replacement works now; the old names keep working until then. Debug mode reports each call of the functions and the 1.x option spelling; the class names are not reported.
 
 | 1.x | Now | Notes |
 |---|---|---|

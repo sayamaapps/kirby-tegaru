@@ -23,7 +23,7 @@ All notable changes to this project are documented here. Versions follow
 
 ### Deprecated
 
-- `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), the `tegaru.<name>` option spelling and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. Removal is planned for 2.0. Debug mode reports each use once per request.
+- `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), the `tegaru.<name>` option spelling and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. Removal is planned for 2.0. Debug mode reports each call of `tegaru_guard()` and `tegaru_i18n()`, and the `tegaru.<name>` option spelling once per request and key. The class names report nothing.
 
 ## [1.1.1] — 2026-10-26
 
