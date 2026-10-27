@@ -158,7 +158,7 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    touching the item; the first 64 KiB of the file have been read locally by
    then (item 5), nothing was decoded and no photo data was sent.
 5. **`prepare(item)`**. Each item has 20 s for the whole run, options included
-   (`TIME_LIMIT`, read as `window.tegaru.timeLimit`). The limit runs from the
+   (`TIME_LIMIT`). The limit runs from the
    selection, the wait in the queue included. Past it the item is `'kept'`
    (uploaded as it is) and its job leaves `pending`. A late result changes
    nothing: after every `await` (head, options, slot) `prepare` returns unless
@@ -233,7 +233,7 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    a sentence in the script.
 7. **`removeItem(item)`**: `upload.remove(item.id)` if it exists (Kirby filters by
    `id`), otherwise splice it out of `upload.files` and revoke its URL.
-8. **Pure helpers** exposed on `window.tegaru` for the tests:
+8. **Pure helpers**, reached by the tests through the harness (`tests/tegaru-js.test.mjs`):
    `sniff(ArrayBuffer|Uint8Array) → string`, `targetSize(w, h, maxEdge) →
    {width, height, scale}`, `isCameraName(name) → bool`, `stamp(Date) →
    'YYYY-MM-DD-hh-mm-ss'`, `cameraName(stamp, taken) → 'foto-<stamp>.jpg'`
@@ -264,7 +264,7 @@ calls) and a fake `app` with `$panel.upload` (`files`, `select`, `submit`,
   started and the others waiting; each next decode starts when a slot frees,
   in the order they became ready; never more than two at once.
 - late item: an item selected while `submit` waits is waited for too.
-- time limit: `window.tegaru.timeLimit` set to 10 ms and a decode that never
+- time limit: `TIME_LIMIT` set to 10 ms (harness `setTimeLimit`) and a decode that never
   settles: `submit` still runs and the item is the original. A result that
   comes after the limit changes nothing. A picture past the limit goes up as
   it is, without a message; a HEIC is never decoded and goes up unchanged.

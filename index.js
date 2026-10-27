@@ -28,8 +28,7 @@
  * files already there.
  *
  * A plain script: ES2017, no modules, no build step. Kirby loads it from the
- * plugin root. The pure helpers and the time limit are exposed as
- * window.tegaru for the tests.
+ * plugin root.
  */
 (function () {
   'use strict';
@@ -41,7 +40,7 @@
   // Enough for the magic bytes; the rest of the photo is never read.
   var HEAD_BYTES = 65536;
   // The longest a picture may take to prepare, in ms. Past it the picture goes
-  // up as it is. Read through window.tegaru.timeLimit, so tests can change it.
+  // up as it is.
   var TIME_LIMIT = 20000;
   // The type each decoded picture is encoded as.
   var OUTPUT_TYPE = {
@@ -572,7 +571,7 @@
             item.tegaru = 'kept';
           }
           resolve();
-        }, window.tegaru.timeLimit);
+        }, TIME_LIMIT);
       });
       var job = Promise.race([prepare(item), limit])
         .catch(function () {
@@ -808,17 +807,6 @@
       Boolean(upload) && typeof upload.pick === 'function' &&
       selectButton(field.buttons || []) >= 0;
   }
-
-  window.tegaru = {
-    sniff: sniff,
-    targetSize: targetSize,
-    isCameraName: isCameraName,
-    stamp: stamp,
-    cameraName: cameraName,
-    formatBytes: formatBytes,
-    decide: decide,
-    timeLimit: TIME_LIMIT
-  };
 
   if (!window.panel || typeof window.panel.plugin !== 'function') {
     return;
