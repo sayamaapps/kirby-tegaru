@@ -59,6 +59,10 @@ final class LegacyTest extends TestCase
 		foreach (['public', 'content', 'site', 'storage'] as $dir) {
 			mkdir($this->tmp . '/' . $dir, 0700, true);
 		}
+
+		// The plugin registers its translations with App::plugin() before the App is built, as
+		// in a site. The messages of the functions are Kirby translations, so they need it.
+		require dirname(__DIR__) . '/index.php';
 	}
 
 	protected function tearDown(): void

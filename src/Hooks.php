@@ -46,6 +46,6 @@ class Hooks
 		}
 
 		Options::applyLanguage($kirby);
-		throw new InvalidArgumentException(message: I18n::t($violation['key'], $violation['values']));
+		throw new InvalidArgumentException(message: I18n::translate($kirby, $violation['key'], $violation['values']));
 	}
 }
