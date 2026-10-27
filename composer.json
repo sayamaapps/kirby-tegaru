@@ -1,16 +1,27 @@
 {
     "name": "sayamaapps/kirby-tegaru",
     "description": "Resizes phone photos in the Kirby Panel before upload, dropping EXIF and GPS data.",
-    "type": "kirby-plugin",
     "license": "MIT",
-    "keywords": ["kirby", "kirby-plugin", "kirby-5", "panel", "upload", "images", "mobile", "privacy", "exif", "gps"],
-    "homepage": "https://github.com/sayamaapps/kirby-tegaru",
+    "type": "kirby-plugin",
+    "keywords": [
+        "kirby",
+        "kirby-plugin",
+        "kirby-5",
+        "panel",
+        "upload",
+        "images",
+        "mobile",
+        "privacy",
+        "exif",
+        "gps"
+    ],
     "authors": [
         {
             "name": "Simon Räder",
             "homepage": "https://sayamaapps.de"
         }
     ],
+    "homepage": "https://github.com/sayamaapps/kirby-tegaru",
     "support": {
         "issues": "https://github.com/sayamaapps/kirby-tegaru/issues",
         "source": "https://github.com/sayamaapps/kirby-tegaru"
@@ -20,25 +31,48 @@
         "getkirby/composer-installer": "^1.2"
     },
     "require-dev": {
-        "getkirby/cms": "^5.0"
-    },
-    "scripts": {
-        "test": "sh tests/run.sh"
+        "ergebnis/composer-normalize": "^2.54",
+        "getkirby/cms": "^5.0",
+        "icanhazstring/composer-unused": "^0.9.7",
+        "maglnet/composer-require-checker": "^4.0",
+        "phpmd/phpmd": "^2.15",
+        "phpunit/phpunit": "11.5.55",
+        "vimeo/psalm": "^6.20"
     },
     "config": {
-        "optimize-autoloader": true,
         "allow-plugins": {
+            "ergebnis/composer-normalize": true,
             "getkirby/composer-installer": true
         },
+        "optimize-autoloader": true,
         "platform": {
-            "php": "8.2.0"
-        }
+            "php": "8.2.27"
+        },
+        "sort-packages": true
     },
     "extra": {
         "installer-name": "tegaru",
-        "kirby-cms-path": false,
         "kirby": {
             "compatible": "^5.0"
-        }
+        },
+        "kirby-cms-path": false
+    },
+    "scripts": {
+        "analyze:phpmd": "vendor/bin/phpmd src,config,index.php,legacy.php,autoload.php github phpmd.xml.dist",
+        "analyze:psalm": "vendor/bin/psalm",
+        "analyze:require-checker": "vendor/bin/composer-require-checker check --config-file=composer-require-checker.json composer.json",
+        "analyze:unused": "vendor/bin/composer-unused",
+        "ci": [
+            "@composer validate --strict --no-check-version --no-check-all",
+            "@composer check-platform-reqs",
+            "@normalize:check",
+            "@analyze:require-checker",
+            "@analyze:unused",
+            "@analyze:psalm",
+            "@analyze:phpmd",
+            "@test"
+        ],
+        "normalize:check": "@composer normalize --dry-run",
+        "test": "vendor/bin/phpunit"
     }
 }

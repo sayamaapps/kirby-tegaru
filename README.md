@@ -2,6 +2,8 @@
 
 Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 5 Panel.
 
+**Versions:** Kirby 5 · PHP 8.2 to 8.5 · MIT · [Changes](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md)
+
 *Tegaru* (手軽) is Japanese for "easy, light to handle". A 24-megapixel phone photo weighs 3–4 MB and often carries its GPS position, so Tegaru resizes it in the browser before the upload starts. The upload is typically about 1 MB, and the re-encoded file carries no location data.
 
 ## Features
@@ -16,70 +18,101 @@ Lighter photo uploads from the phone into the [Kirby CMS](https://getkirby.com) 
 
 ## Requirements
 
-- Kirby 5 and PHP 8.2–8.5.
+- Kirby 5 and PHP 8.2 to 8.5.
 - A browser with canvas support. Measured on iPhone Safari only; other browsers are untested.
 
 ## Installation
 
-```sh
-composer require sayamaapps/kirby-tegaru
-```
+Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
-Composer installs to `site/plugins/tegaru/`. Add that path to `.gitignore` and deploy it like `vendor/`.
+1. **Composer.** The installer puts the plugin into `site/plugins/tegaru/`:
 
-Everything is off by default. Switch it on in `site/config/config.php`:
+   ```sh
+   composer require sayamaapps/kirby-tegaru
+   ```
 
-```php
-return [
-    'tegaru.active' => true,
-];
-```
+   Add `/site/plugins/tegaru/` to `.gitignore` and deploy it like `vendor/`.
+
+2. **ZIP.** Download the source archive of a release from GitHub, unpack it and move the folder to `site/plugins/tegaru/`.
+
+3. **Git submodule.** From the root of your site:
+
+   ```sh
+   git submodule add https://github.com/sayamaapps/kirby-tegaru.git site/plugins/tegaru
+   ```
 
 ## Usage
 
-Tegaru wraps `select`, `submit` and `reset` of Kirby's Panel upload module. Each picked JPEG, PNG or WebP photo of at least `minBytes` is decoded, rotated, resized and re-encoded in the browser; the upload button waits until the photos are ready. The Panel script reads its settings from `GET /api/tegaru/options`, which needs a logged-in Panel user.
+1. **Switch it on.** Everything is off by default. In `site/config/config.php`:
 
-Tegaru also extends Kirby's files field: while `tegaru.active` is `true`, a tap on the empty field does what the field's Upload button does. The Select button still lists the files already there. A field without uploads (`uploads: false`), disabled or full keeps Kirby's behaviour. Kirby logs `Plugin is replacing "k-files-field"` in the browser console.
+   ```php
+   return [
+       'tegaru.active' => true,
+   ];
+   ```
 
-On the server, `file.create:before` and `file.replace:before` reject files above `maxUploadBytes` (15 MB), JPEG, PNG, GIF or WebP images above `maxPixels` (40 megapixels), and HEIC/HEIF files, with a message in the site's language. The server never resizes. These checks run only while `tegaru.active` is `true`.
+2. **Set the photo blueprint.** In `site/blueprints/files/<template>.yml`:
 
-### Blueprints
+   ```yaml
+   accept:
+     mime: image/jpeg, image/png, image/webp
+   create:
+     width: 2400
+     height: 2400
+     format: jpg
+   ```
 
-Set these two options in your photo blueprint, `site/blueprints/files/<template>.yml`:
+   - **HEIC:** listing `mime` instead of `type: image` keeps HEIC out of the picker. On iPhone Safari a library photo then arrives as a JPEG (verified on iPhone only). Tegaru never converts HEIC; with the plugin on, the server refuses it.
+   - **`create`** is Kirby's server-side resize. It covers uploads that skip the Panel script (API, server-side import) and photos the script leaves unchanged. Whether it removes metadata depends on Kirby's image driver (`thumbs.driver`), so do not rely on it to remove GPS. Keep it at the top level; under `options:`, `create` is a permission setting.
 
-```yaml
-accept:
-  mime: image/jpeg, image/png, image/webp
-create:
-  width: 2400
-  height: 2400
-  format: jpg
-```
+3. **Upload in the Panel.** Each picked JPEG, PNG or WebP photo of at least `minBytes` is decoded, rotated, resized and re-encoded in the browser; the upload button waits until the photos are ready. The Panel script reads its settings from `GET /api/tegaru/options`, which needs a logged-in Panel user.
 
-- **HEIC:** listing `mime` instead of `type: image` keeps HEIC out of the picker. On iPhone Safari a library photo then arrives as a JPEG (verified on iPhone only). Tegaru never converts HEIC; with `tegaru.active` on, the server refuses it.
-- **`create`** is Kirby's server-side resize. It covers uploads that skip the Panel script (API, server-side import) and photos the script leaves unchanged. Whether it removes metadata depends on Kirby's image driver (`thumbs.driver`), so do not rely on it to remove GPS. Keep it at the top level; under `options:`, `create` is a permission setting.
+   While the plugin is on, a tap on an empty files field does what the field's Upload button does. The Select button still lists the files already there. A field without uploads (`uploads: false`), disabled or full keeps Kirby's behaviour. Kirby logs `Plugin is replacing "k-files-field"` in the browser console.
+
+4. **The server checks every new or replaced file.** `file.create:before` and `file.replace:before` reject files above `maxUploadBytes`, JPEG, PNG, GIF or WebP images above `maxPixels`, and HEIC/HEIF files, with a message in the site's language. The server never resizes.
 
 ### Limits
 
 - **No server-side resizing** by Tegaru; use `create:`.
 - **Only Panel uploads are changed.** Files that come in through the API or a server-side import are not re-encoded.
-- **Metadata stays** in photos Tegaru leaves unchanged: while `tegaru.active` is off, below `minBytes`, not decodable in the browser, HEIC, GIF, AVIF, SVG or PDF, not smaller once re-encoded, WebP the browser cannot encode, settings unavailable, or not ready 20 seconds after they were picked.
+- **Metadata stays** in photos Tegaru leaves unchanged: while the plugin is off, below `minBytes`, not decodable in the browser, HEIC, GIF, AVIF, SVG or PDF, not smaller once re-encoded, WebP the browser cannot encode, settings unavailable, or not ready 20 seconds after they were picked.
 - **Images only.** Video and other media are not touched.
-- **Kirby's upload module is not a public API.** If the wrapped functions are missing, Tegaru logs one `console.info` and changes nothing. The package's tests fail when a Kirby release removes them.
+- **Kirby's upload module is not a public API.** If the wrapped functions are missing, Tegaru logs one `console.info` and changes nothing.
 
 ## Options
 
-All keys are `tegaru.<name>`, flat or nested. `null` means "not set"; invalid values fall back to the default.
+Write each option as `tegaru.<name>` in your site config, as in step 1. `null` means "not set"; invalid values fall back to the default. The flat and the nested form (`'tegaru' => ['active' => true]`) both work.
 
-| Option | Default | Description |
+| Option | Type | Default | Example | Description |
+|---|---|---|---|---|
+| `active` | boolean | `false` | `'tegaru.active' => true,` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
+| `maxEdge` | integer | `2400` | `'tegaru.maxEdge' => 1920,` | Longest edge of the browser-side result, in px. |
+| `quality` | number | `0.85` | `'tegaru.quality' => 0.8,` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
+| `minBytes` | integer | `1048576` | `'tegaru.minBytes' => 0,` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
+| `maxUploadBytes` | integer | `15728640` | `'tegaru.maxUploadBytes' => 25165824,` | Server cap per file (15 MB). |
+| `maxPixels` | integer | `40000000` | `'tegaru.maxPixels' => 24000000,` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
+| `language` | string | site default language | `'tegaru.language' => 'de',` | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
+
+## Deprecations
+
+Deprecated in 1.x: they keep working and raise no notice. The docs and the code name the replacement.
+
+| 1.x | Replacement | Notes |
 |---|---|---|
-| `active` | `false` | Master switch. Off: the hook lets everything through and the script changes nothing. |
-| `maxEdge` | `2400` | Longest edge of the browser-side result, in px. |
-| `quality` | `0.85` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
-| `minBytes` | `1048576` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
-| `maxUploadBytes` | `15728640` | Server cap per file (15 MB). |
-| `maxPixels` | `40000000` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
-| `language` | site default language | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
+| `tegaru_guard($kirby, $upload)` | `Sayamaapps\Tegaru\Hooks::guard($kirby, $upload)` | Global function, kept as a wrapper. |
+| `tegaru_i18n()` | `Sayamaapps\Tegaru\Options::applyLanguage($kirby)` | Global function, kept as a wrapper. |
+| `Tegaru\I18n::t($key, $values)` | none | Kept. It returns the same text from the tables and needs no Kirby app. |
+| `Tegaru\Guard`, `Tegaru\I18n`, `Tegaru\Options` | `Sayamaapps\Tegaru\Guard`, `Sayamaapps\Tegaru\I18n`, `Sayamaapps\Tegaru\Options` | Class aliases. `instanceof` and type hints keep working. |
+
+## Planned for 2.0
+
+Breaking changes, not part of 1.x:
+
+- Options are read as `sayamaapps.tegaru.<name>` only. The `tegaru.<name>` spelling stops being read.
+- The functions `tegaru_guard()` and `tegaru_i18n()`, `I18n::t()` and the `Tegaru\` class aliases are removed.
+- The test access of the Panel script (`window.tegaru`) is removed.
+
+Unchanged: the translation keys `tegaru.<key>`, the route `GET /api/tegaru/options`, the hook names, and the blueprint and Panel field names. From 1.x on, each message is also served as `sayamaapps.tegaru.<key>`, so a site can use the 2.0 spelling for its own translations; Tegaru itself reads `tegaru.<key>` until 2.0.
 
 ## Privacy
 
@@ -87,8 +120,8 @@ Tegaru processes no visitor data. Nothing is stored in the browser, and nothing 
 
 ## Maintenance
 
-Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](CHANGELOG.md).
+Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. The Panel messages are Kirby translations under `tegaru.<key>`, registered in `config/translations.php`, so a site can override them. The server messages come from `translations/` through `I18n::text()`, not from Kirby's translations: a refused upload gets its message without a Kirby app, as in 1.x. The lock file `composer.lock` is committed, and CI runs the lowest, the locked and the highest dependency versions. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE.md](LICENSE.md).

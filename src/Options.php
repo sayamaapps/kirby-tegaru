@@ -1,11 +1,11 @@
 <?php
 
-namespace Tegaru;
+namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
 
 /**
- * Reads `tegaru.*` options.
+ * Reads Tegaru's options: `tegaru.<key>`.
  *
  * `null` counts as "not set", like Kirby's own option(), so a key set to
  * null falls back to the default. Both spellings work, flat
@@ -13,124 +13,194 @@ use Kirby\Cms\App;
  *
  * Defaults are passed as fallback values at each call, NOT in an 'options'
  * block of the plugin (Kirby would file them under sayamaapps.tegaru.*).
+ *
+ * @package   Kirby Tegaru
+ * @author    Simon Räder
+ * @link      https://github.com/sayamaapps/kirby-tegaru
+ * @copyright Simon Räder
+ * @license   https://opensource.org/licenses/MIT
+ * @since 1.0.0
  */
-final class Options
+class Options
 {
-    public const PREFIX = 'tegaru.';
+	/**
+	 * Longest edge of the browser-side result, in pixels.
+	 * @since 1.0.0
+	 */
+	public const DEFAULT_MAX_EDGE = 2400;
 
-    /** Longest edge of the browser-side result, in pixels. */
-    public const DEFAULT_MAX_EDGE = 2400;
-    /** JPEG quality of the browser-side result, 0–1. */
-    public const DEFAULT_QUALITY = 0.85;
-    /** Files below this size are not touched in the browser. */
-    public const DEFAULT_MIN_BYTES = 1048576;
-    /** Server cap: bytes per uploaded file. */
-    public const DEFAULT_MAX_UPLOAD_BYTES = 15728640;
-    /** Server cap: pixels (width × height) per uploaded raster image. */
-    public const DEFAULT_MAX_PIXELS = 40000000;
+	/**
+	 * Server cap: pixels (width × height) per uploaded raster image.
+	 * @since 1.0.0
+	 */
+	public const DEFAULT_MAX_PIXELS = 40000000;
 
-    /** Format of the options route; it increases only when a field is removed, renamed or changes meaning. */
-    public const FORMAT = 1;
+	/**
+	 * Server cap: bytes per uploaded file.
+	 * @since 1.0.0
+	 */
+	public const DEFAULT_MAX_UPLOAD_BYTES = 15728640;
 
-    public static function get(App $kirby, string $key, mixed $default = null): mixed
-    {
-        return $kirby->option(self::PREFIX . $key) ?? $default;
-    }
+	/**
+	 * Files below this size are not touched in the browser.
+	 * @since 1.0.0
+	 */
+	public const DEFAULT_MIN_BYTES = 1048576;
 
-    /** Off by default: without `'tegaru.active' => true` the plugin does nothing. */
-    public static function active(App $kirby): bool
-    {
-        return self::get($kirby, 'active', false) === true;
-    }
+	/**
+	 * JPEG quality of the browser-side result, 0–1.
+	 * @since 1.0.0
+	 */
+	public const DEFAULT_QUALITY = 0.85;
 
-    public static function maxEdge(App $kirby): int
-    {
-        return self::positiveInt($kirby, 'maxEdge', self::DEFAULT_MAX_EDGE);
-    }
+	/**
+	 * Format of the options route; it increases only when a field is removed, renamed or changes meaning.
+	 * @since 1.0.0
+	 */
+	public const FORMAT = 1;
 
-    /** Quality is clamped to 0.1–1.0; anything else falls back to the default. */
-    public static function quality(App $kirby): float
-    {
-        $value = self::get($kirby, 'quality', self::DEFAULT_QUALITY);
-        if (!is_int($value) && !is_float($value)) {
-            return self::DEFAULT_QUALITY;
-        }
-        $value = (float) $value;
-        return $value >= 0.1 && $value <= 1.0 ? $value : self::DEFAULT_QUALITY;
-    }
+	/**
+	 * Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it.
+	 * @since 1.0.0
+	 */
+	public const PREFIX = 'tegaru.';
 
-    public static function minBytes(App $kirby): int
-    {
-        return self::nonNegativeInt($kirby, 'minBytes', self::DEFAULT_MIN_BYTES);
-    }
+	/**
+	 * Off by default: without `'tegaru.active' => true` the plugin does nothing.
+	 * @since 1.0.0
+	 */
+	public static function active(App $kirby): bool
+	{
+		return self::get($kirby, 'active', false) === true;
+	}
 
-    public static function maxUploadBytes(App $kirby): int
-    {
-        return self::positiveInt($kirby, 'maxUploadBytes', self::DEFAULT_MAX_UPLOAD_BYTES);
-    }
+	/**
+	 * Sets I18n's language for this request from language(). Called before any message is built.
+	 * @since 1.2.0
+	 */
+	public static function applyLanguage(App $kirby): void
+	{
+		I18n::setLanguage(self::language($kirby));
+	}
 
-    public static function maxPixels(App $kirby): int
-    {
-        return self::positiveInt($kirby, 'maxPixels', self::DEFAULT_MAX_PIXELS);
-    }
+	/**
+	 * What the Panel script needs, as the options route returns it
+	 * (`GET /api/tegaru/options`, Panel users only).
+	 *
+	 * @return array{format:int,active:bool,maxEdge:int,quality:float,minBytes:int,maxUploadBytes:int,maxPixels:int,language:string}
+	 * @since 1.0.0
+	 */
+	public static function forPanel(App $kirby): array
+	{
+		// The fields of the options route and their defaults, in this order.
+		return [
+			'format'         => self::FORMAT,
+			'active'         => self::active($kirby),
+			'maxEdge'        => self::maxEdge($kirby),
+			'quality'        => self::quality($kirby),
+			'minBytes'       => self::minBytes($kirby),
+			'maxUploadBytes' => self::maxUploadBytes($kirby),
+			'maxPixels'      => self::maxPixels($kirby),
+			'language'       => self::language($kirby),
+		];
+	}
 
-    /**
-     * Language of the messages: `tegaru.language`, otherwise the site's
-     * default language, otherwise the first two letters of Kirby's `locale`
-     * option, otherwise English. Only languages Tegaru ships are returned.
-     */
-    public static function language(App $kirby): string
-    {
-        $candidates = [self::get($kirby, 'language')];
-        try {
-            $candidates[] = $kirby->defaultLanguage()?->code();
-        } catch (\Throwable) {
-            // No languages configured.
-        }
-        $locale = $kirby->option('locale');
-        if (is_array($locale)) {
-            $locale = $locale[LC_ALL] ?? reset($locale);
-        }
-        $candidates[] = is_string($locale) ? substr($locale, 0, 2) : null;
+	/**
+	 * The value of an option: `tegaru.<key>`, else $default.
+	 * @since 1.0.0
+	 */
+	public static function get(App $kirby, string $key, mixed $default = null): mixed
+	{
+		return $kirby->option(self::PREFIX . $key) ?? $default;
+	}
 
-        foreach ($candidates as $candidate) {
-            if (is_string($candidate) && in_array(strtolower($candidate), I18n::LANGUAGES, true)) {
-                return strtolower($candidate);
-            }
-        }
-        return 'en';
-    }
+	/**
+	 * Language of the messages: `tegaru.language`, otherwise the site's
+	 * default language, otherwise the first two letters of Kirby's `locale`
+	 * option, otherwise English. Only languages Tegaru ships are returned.
+	 * @since 1.0.0
+	 */
+	public static function language(App $kirby): string
+	{
+		$candidates = [self::get($kirby, 'language')];
+		try {
+			$candidates[] = $kirby->defaultLanguage()?->code();
+		} catch (\Throwable) {
+			// No languages configured.
+		}
+		$locale = $kirby->option('locale');
+		if (is_array($locale)) {
+			$locale = $locale[LC_ALL] ?? reset($locale);
+		}
+		$candidates[] = is_string($locale) ? substr($locale, 0, 2) : null;
 
-    /**
-     * What the Panel script needs, as the options route returns it
-     * (`GET /api/tegaru/options`, Panel users only).
-     *
-     * @return array{format:int,active:bool,maxEdge:int,quality:float,minBytes:int,maxUploadBytes:int,maxPixels:int,language:string}
-     */
-    public static function forPanel(App $kirby): array
-    {
-        // The fields of the options route and their defaults, in this order.
-        return [
-            'format'         => self::FORMAT,
-            'active'         => self::active($kirby),
-            'maxEdge'        => self::maxEdge($kirby),
-            'quality'        => self::quality($kirby),
-            'minBytes'       => self::minBytes($kirby),
-            'maxUploadBytes' => self::maxUploadBytes($kirby),
-            'maxPixels'      => self::maxPixels($kirby),
-            'language'       => self::language($kirby),
-        ];
-    }
+		foreach ($candidates as $candidate) {
+			if (is_string($candidate) && in_array(strtolower($candidate), I18n::LANGUAGES, true)) {
+				return strtolower($candidate);
+			}
+		}
+		return 'en';
+	}
 
-    private static function positiveInt(App $kirby, string $key, int $default): int
-    {
-        $value = self::get($kirby, $key, $default);
-        return is_int($value) && $value > 0 ? $value : $default;
-    }
+	/**
+	 * Longest edge of the browser-side result in pixels; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
+	public static function maxEdge(App $kirby): int
+	{
+		return self::positiveInt($kirby, 'maxEdge', self::DEFAULT_MAX_EDGE);
+	}
 
-    private static function nonNegativeInt(App $kirby, string $key, int $default): int
-    {
-        $value = self::get($kirby, $key, $default);
-        return is_int($value) && $value >= 0 ? $value : $default;
-    }
+	/**
+	 * Server cap in pixels (width × height) per raster image; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
+	public static function maxPixels(App $kirby): int
+	{
+		return self::positiveInt($kirby, 'maxPixels', self::DEFAULT_MAX_PIXELS);
+	}
+
+	/**
+	 * Server cap in bytes per uploaded file; the default when not a positive integer.
+	 * @since 1.0.0
+	 */
+	public static function maxUploadBytes(App $kirby): int
+	{
+		return self::positiveInt($kirby, 'maxUploadBytes', self::DEFAULT_MAX_UPLOAD_BYTES);
+	}
+
+	/**
+	 * Files below this size in bytes are left alone in the browser; the default when not a non-negative integer.
+	 * @since 1.0.0
+	 */
+	public static function minBytes(App $kirby): int
+	{
+		return self::nonNegativeInt($kirby, 'minBytes', self::DEFAULT_MIN_BYTES);
+	}
+
+	private static function nonNegativeInt(App $kirby, string $key, int $default): int
+	{
+		$value = self::get($kirby, $key, $default);
+		return is_int($value) && $value >= 0 ? $value : $default;
+	}
+
+	private static function positiveInt(App $kirby, string $key, int $default): int
+	{
+		$value = self::get($kirby, $key, $default);
+		return is_int($value) && $value > 0 ? $value : $default;
+	}
+
+	/**
+	 * Quality is clamped to 0.1–1.0; anything else falls back to the default.
+	 * @since 1.0.0
+	 */
+	public static function quality(App $kirby): float
+	{
+		$value = self::get($kirby, 'quality', self::DEFAULT_QUALITY);
+		if (!is_int($value) && !is_float($value)) {
+			return self::DEFAULT_QUALITY;
+		}
+		$value = (float)$value;
+		return $value >= 0.1 && $value <= 1.0 ? $value : self::DEFAULT_QUALITY;
+	}
 }

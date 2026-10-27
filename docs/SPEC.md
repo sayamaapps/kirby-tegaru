@@ -1,8 +1,9 @@
-# Tegaru — SPEC (Phase 1)
+# Tegaru — specification
 
-Contract for the build. Sections A, B and C below each name the files they
-own; change only those. `index.php`, `src/Options.php`, `src/I18n.php`, this
-file and the CI are shared.
+This document is the specification the code follows. Sections A, B and C each
+name the files they own, and a change to one of them touches only those files.
+`index.php`, `config/`, `src/Options.php`, `src/I18n.php`, this file and the CI
+are shared by all three.
 
 Public interface, option names, code, comments and docs are English.
 Messages ship in English and German (English first, same keys; see
@@ -33,7 +34,7 @@ Kirby itself (`panel.upload`) does not touch the bytes: a file goes to the
 server byte-identical, only split into chunks when it exceeds
 `upload_max_filesize`. Kirby cannot resize, thumbnail or even open HEIC.
 
-## What Tegaru does NOT do (Phase 1)
+## What Tegaru does NOT do
 
 - No server-side resizing. That is the blueprint's `create:` option
   (`create: { width: 2400, height: 2400, format: jpg }`), which also covers
@@ -56,7 +57,7 @@ server byte-identical, only split into chunks when it exceeds
 - Nothing stored in the browser, no address of any host, no `eval`. CI
   greps for all three.
 
-## Options (`site/config/config.php`, all under `tegaru.`)
+## Options (`site/config/config.php`, `tegaru.<name>`, flat or nested)
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -157,7 +158,7 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    touching the item; the first 64 KiB of the file have been read locally by
    then (item 5), nothing was decoded and no photo data was sent.
 5. **`prepare(item)`**. Each item has 20 s for the whole run, options included
-   (`TIME_LIMIT`, read as `window.tegaru.timeLimit`). The limit runs from the
+   (`TIME_LIMIT`). The limit runs from the
    selection, the wait in the queue included. Past it the item is `'kept'`
    (uploaded as it is) and its job leaves `pending`. A late result changes
    nothing: after every `await` (head, options, slot) `prepare` returns unless
@@ -232,7 +233,7 @@ Files: `index.js` (replace the stub), `tests/tegaru-js.test.mjs`.
    a sentence in the script.
 7. **`removeItem(item)`**: `upload.remove(item.id)` if it exists (Kirby filters by
    `id`), otherwise splice it out of `upload.files` and revoke its URL.
-8. **Pure helpers** exposed on `window.tegaru` for the tests:
+8. **Pure helpers**, reached by the tests through the harness (`tests/tegaru-js.test.mjs`):
    `sniff(ArrayBuffer|Uint8Array) → string`, `targetSize(w, h, maxEdge) →
    {width, height, scale}`, `isCameraName(name) → bool`, `stamp(Date) →
    'YYYY-MM-DD-hh-mm-ss'`, `cameraName(stamp, taken) → 'foto-<stamp>.jpg'`
@@ -263,7 +264,7 @@ calls) and a fake `app` with `$panel.upload` (`files`, `select`, `submit`,
   started and the others waiting; each next decode starts when a slot frees,
   in the order they became ready; never more than two at once.
 - late item: an item selected while `submit` waits is waited for too.
-- time limit: `window.tegaru.timeLimit` set to 10 ms and a decode that never
+- time limit: `TIME_LIMIT` set to 10 ms (harness `setTimeLimit`) and a decode that never
   settles: `submit` still runs and the item is the original. A result that
   comes after the limit changes nothing. A picture past the limit goes up as
   it is, without a message; a HEIC is never decoded and goes up unchanged.
@@ -284,12 +285,10 @@ hosts and `eval` — keep all three out.
 Files: `src/Guard.php` (replace the stub, keep the
 signatures), `tests/GuardTest.php`, `tests/OptionsTest.php`,
 `tests/I18nTest.php`, `tests/PanelSignatureTest.php`, `tests/KirbyTest.php`.
-Pattern for tests: standalone PHP scripts with `expect()`/`holds()` and a
-check counter, no PHPUnit (see `tests/run.sh`; copy the style of the
-sibling package `kirby-shoji/tests/*.php` — I18nTest and KirbyTest there
-show the i18n checks and how to boot a throwaway Kirby with a plugin).
+Pattern for tests: PHPUnit test classes with the `expect()`/`holds()` helpers
+of `tests/helpers.php`. KirbyTest boots a throwaway Kirby with the plugin.
 
-The hook in `index.php` (`tegaru_guard()`) runs on `file.create:before` and on
+The hook (`Hooks::guard()`, registered in `config/hooks.php`) runs on `file.create:before` and on
 `file.replace:before`. Both pass `(File, Upload)`; the upload is the file in PHP's
 tmp directory (for a replacement: the source of `replace()`).
 
@@ -299,7 +298,7 @@ Kirby-free. Returns `null` (allowed) or `['key' => …, 'values' => […]]`:
 
 1. `filesize($path) > $maxBytes` → `error.size` with `size` and `max` in MB,
    one decimal (`'3.7'`, `'15.0'`), as strings, point as decimal separator
-   (the translation does not localise numbers in Phase 1).
+   (the translation does not localise numbers yet).
 2. first 32 bytes: `Guard::sniff($head)`; `heic` → `error.heic`, no values.
 3. `jpeg|png|gif|webp` → `getimagesize($path)`; if it fails → `null`
    (Kirby's own checks take over); if `width × height > $maxPixels` →
@@ -324,7 +323,8 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   fall back, `forPanel()` shape and `format`, `language()` from the option,
   from the site language, from `locale`, fallback `en`.
 - `I18nTest.php`: same keys and the same `{placeholders}` in every language,
-  unknown language → English, `t()` replaces values, missing key → key.
+  unknown language → English, `text()` replaces values, missing key → key,
+  `t()` gives the same text and raises no notice.
 - `PanelSignatureTest.php`: finds the installed Kirby under `vendor/getkirby/cms`,
   asserts `panel/dist/js/plugins.js` exists and mentions `created`, and that
   `panel/dist/js/index.min.js` contains the method names `pick(`, `select(`,
@@ -334,7 +334,7 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   `require index.php` **before** `new App(...)` — `App::plugin()` fills a
   static registry that the App reads while it is built; registered later,
   the routes and translations are missing (verified on Kirby 5.6.1). Pass
-  `roots` to a temp dir and `options`: (a) `tegaru.active` off → `tegaru_guard()` returns for a 20-MB
+  `roots` to a temp dir and `options`: (a) `tegaru.active` off → `Hooks::guard()` returns for a 20-MB
   temp file; (b) on → throws `InvalidArgumentException` whose message is the
   German text when the site's default language is `de`, English otherwise;
   (c) the plugin translations contain `tegaru.error.size` in `en` and `de`;
@@ -344,13 +344,14 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   array; (f) the hook `file.create:before` is registered; (g) `file.replace:before`
   is registered and a 20-MB replacement is refused with the size message; (h)
   the options route throws `AuthException` without a login and answers with
-  one. The temp dir is removed in a shutdown function, because Kirby commits its
-  sessions in one.
+  one. Sessions are kept in memory (`MemorySessionStore` in `tests/helpers.php`),
+  because Kirby commits its sessions at shutdown; the temp dir is removed in
+  `tearDown()`.
 
 ## Section C — Documentation (`README.md`, `CHANGELOG.md`)
 
 Files: the two above (README replaces the scaffold
-text). Style and structure follow `kirby-shoji` and `kirby-noren`: short
+text). Style and structure follow the Kirby plugin conventions: short
 intro with the Japanese word, Requirements, Installation (`composer require
 sayamaapps/kirby-tegaru`, the `repositories` entry while the package is not
 on Packagist), Configuration (the options table above), How it works (the
@@ -363,7 +364,7 @@ height: 2400, format: jpg }` as the server-side rule for uploads the script
 never sees), Browser support (Safari iOS/macOS, Chrome, Firefox: canvas
 path; HEIC is never converted), Limits (no server resizing,
 no HEIC conversion anywhere, GIF/SVG/PDF untouched), Development
-(`composer install`, `sh tests/run.sh`, `node --test tests/`).
+(`composer install`, `composer test`, `node --test tests/`).
 
 No privacy text: Tegaru processes no visitor data. The README's Privacy section says so in three sentences.
 
