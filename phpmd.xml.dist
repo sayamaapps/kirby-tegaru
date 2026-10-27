@@ -16,7 +16,7 @@
 	<rule ref="rulesets/design.xml" />
 
 	<rule ref="rulesets/naming.xml">
-		<!-- I18n::t() is the translation shorthand used in the hook messages and the tests. -->
+		<!-- I18n::t() is the 1.x method name, kept as a deprecated alias of translate(). -->
 		<exclude name="ShortMethodName" />
 	</rule>
 

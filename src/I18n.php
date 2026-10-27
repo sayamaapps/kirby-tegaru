@@ -3,6 +3,7 @@
 namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
+use Kirby\Cms\Helpers;
 
 /**
  * Strings of the server-side messages.
@@ -10,8 +11,8 @@ use Kirby\Cms\App;
  * The tables live in translations/<language>.php and are registered as Kirby
  * plugin translations under `tegaru.<key>` (config/translations.php). The hook
  * and the Panel script both read them through Kirby: translate() for the hook,
- * `panel.$t('tegaru.<key>')` in the Panel. t() reads the tables directly; it is
- * the 1.x method of Tegaru\I18n, kept for that alias and not used by the plugin.
+ * `panel.$t('tegaru.<key>')` in the Panel. t() is the 1.x method of Tegaru\I18n:
+ * a deprecated alias of translate(), not used by the plugin.
  *
  * The language is static state, set by Options::applyLanguage() before a
  * message is built (Hooks::guard() does so first). Every read follows a set,
@@ -88,14 +89,14 @@ class I18n
 	}
 
 	/**
-	 * The 1.x method, read from the tables without Kirby. The plugin uses translate().
-	 * `{name}` placeholders are replaced with the given values, unescaped.
+	 * The 1.x method: translate() for the current app. Deprecated; the plugin uses translate().
+	 * @deprecated 1.2.0, use Sayamaapps\Tegaru\I18n::translate()
 	 * @since 1.0.0
 	 */
 	public static function t(string $key, array $values = []): string
 	{
-		$text = self::table(self::$language)[$key] ?? self::table('en')[$key] ?? $key;
-		return self::fill($text, $values);
+		Helpers::deprecated('Sayamaapps\Tegaru\I18n::t() is deprecated, use Sayamaapps\Tegaru\I18n::translate()', 'tegaru-method');
+		return self::translate(App::instance(), $key, $values);
 	}
 
 	/**

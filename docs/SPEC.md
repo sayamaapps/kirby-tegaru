@@ -323,7 +323,8 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   fall back, `forPanel()` shape and `format`, `language()` from the option,
   from the site language, from `locale`, fallback `en`.
 - `I18nTest.php`: same keys and the same `{placeholders}` in every language,
-  unknown language → English, `t()` replaces values, missing key → key.
+  unknown language → English, `translate()` replaces values, missing key → key,
+  `t()` gives the same text and is reported as a deprecation in debug mode.
 - `PanelSignatureTest.php`: finds the installed Kirby under `vendor/getkirby/cms`,
   asserts `panel/dist/js/plugins.js` exists and mentions `created`, and that
   `panel/dist/js/index.min.js` contains the method names `pick(`, `select(`,

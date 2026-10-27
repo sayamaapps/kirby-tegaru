@@ -97,13 +97,14 @@ Example: `'sayamaapps.tegaru.maxEdge' => 1920,`
 
 ## Deprecations
 
-Deprecated in this release, removed in 2.0 (planned). Each replacement works now; the old names keep working until then. Debug mode reports each call of the functions and the 1.x option spelling; the class names are not reported.
+Deprecated in this release, removed in 2.0 (planned). Each replacement works now; the old names keep working until then. Debug mode reports each call of the functions and of `I18n::t()`, and the 1.x option spelling; the class names are not reported.
 
 | 1.x | Now | Notes |
 |---|---|---|
 | `tegaru.<option>` in the site config | `sayamaapps.tegaru.<option>` | Still read as fallback when the new name is not set. The 1.x form may be nested (`'tegaru' => ['active' => true]`); the new form is written flat. |
 | `tegaru_guard($kirby, $upload)` | `Sayamaapps\Tegaru\Hooks::guard($kirby, $upload)` | Global function, kept as a wrapper. |
 | `tegaru_i18n()` | `Sayamaapps\Tegaru\Options::applyLanguage($kirby)` | Global function, kept as a wrapper. |
+| `Tegaru\I18n::t($key, $values)` | `Sayamaapps\Tegaru\I18n::translate($kirby, $key, $values)` | Method, kept as a wrapper: it uses the current Kirby app. |
 | `Tegaru\Guard`, `Tegaru\I18n`, `Tegaru\Options` | `Sayamaapps\Tegaru\Guard`, `Sayamaapps\Tegaru\I18n`, `Sayamaapps\Tegaru\Options` | Class aliases. `instanceof` and type hints keep working. |
 
 Unchanged: the translation keys `tegaru.<key>`, the route `GET /api/tegaru/options`, the hook names, and the blueprint and Panel field names.

@@ -1,6 +1,7 @@
 <?php
 
 use Kirby\Cms\App;
+use Kirby\Filesystem\Dir;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Sayamaapps\Tegaru\I18n;
@@ -8,12 +9,49 @@ use Sayamaapps\Tegaru\I18n;
 /**
  * Translations: every language has the same keys and placeholders as
  * English; the keys the hook and the Panel script use exist; an unknown
- * language falls back to English; t() fills {placeholders}; a missing key
- * comes back as the key.
+ * language falls back to English; translate() fills {placeholders} from
+ * Kirby's translations; a missing key comes back as the key; t(), the 1.x
+ * method, gives the same text and reports a deprecation in debug mode.
  */
 #[CoversClass(I18n::class)]
 final class I18nTest extends TestCase
 {
+	private string $tmp;
+
+	/** A new Kirby app on a throwaway site; German is the site's language when $german. */
+	private function app(array $options = [], bool $german = false): App
+	{
+		return new App([
+			'roots' => [
+				'index' => $this->tmp . '/public', 'content' => $this->tmp . '/content', 'site' => $this->tmp . '/site',
+				'storage' => $this->tmp . '/storage', 'media' => $this->tmp . '/public/media',
+			],
+			'options' => ['url' => 'https://example.com'] + $options,
+			'languages' => $german ? [['code' => 'de', 'default' => true, 'url' => 'https://example.com', 'slug' => 'de', 'name' => 'Deutsch']] : [],
+		]);
+	}
+
+	/**
+	 * Runs $fn and returns the deprecation messages it triggered.
+	 *
+	 * @return list<string>
+	 */
+	private function collectDeprecations(callable $fn): array
+	{
+		$deprecations = [];
+		set_error_handler(function (int $level, string $message) use (&$deprecations): bool {
+			$deprecations[] = $message;
+			return true;
+		}, E_USER_DEPRECATED);
+
+		try {
+			$fn();
+		} finally {
+			restore_error_handler();
+		}
+		return $deprecations;
+	}
+
 	/** The placeholder names of a text, sorted and unique. */
 	private static function placeholders(string $text): array
 	{
@@ -23,16 +61,29 @@ final class I18nTest extends TestCase
 		return $names;
 	}
 
+	protected function setUp(): void
+	{
+		$this->tmp = sys_get_temp_dir() . '/tegaru-i18n-' . bin2hex(random_bytes(6));
+		foreach (['public', 'content', 'site', 'storage'] as $dir) {
+			mkdir($this->tmp . '/' . $dir, 0700, true);
+		}
+
+		// The plugin registers its translations before the App is built, as in a site.
+		require dirname(__DIR__) . '/index.php';
+	}
+
 	protected function tearDown(): void
 	{
 		App::destroy();
+		Dir::remove($this->tmp);
 	}
 
 	public function testEnglishPlaceholdersAreFilledInAndValuesAreNotEscaped(): void
 	{
 		I18n::setLanguage('en');
-		expect('The file is 3.7 MB; the maximum is 1.0 MB. Tip: upload the photo from the Photos app, not from Files.', I18n::t('error.size', ['size' => '3.7', 'max' => '1.0']), 'English placeholders filled');
-		expect('<b>x</b> could not be read as an image; it is uploaded unchanged.', I18n::t('panel.unreadable', ['name' => '<b>x</b>']), 'values are inserted unescaped');
+		$kirby = $this->app();
+		expect('The file is 3.7 MB; the maximum is 1.0 MB. Tip: upload the photo from the Photos app, not from Files.', I18n::translate($kirby, 'error.size', ['size' => '3.7', 'max' => '1.0']), 'English placeholders filled');
+		expect('<b>x</b> could not be read as an image; it is uploaded unchanged.', I18n::translate($kirby, 'panel.unreadable', ['name' => '<b>x</b>']), 'values are inserted unescaped');
 	}
 
 	public function testEveryLanguageHasTheEnglishKeysAndPlaceholders(): void
@@ -55,17 +106,31 @@ final class I18nTest extends TestCase
 
 	public function testGermanIsSetAndTheValuesAreFilledIn(): void
 	{
+		$kirby = $this->app([], true);
 		I18n::setLanguage('de');
 		expect('de', I18n::language(), 'German is set');
-		expect(true, str_starts_with(I18n::t('error.heic'), 'HEIC-Fotos können hier nicht verarbeitet werden.'), 'German string');
-		expect('Die Datei ist 3.7 MB groß, erlaubt sind 1.0 MB. Tipp: das Foto aus der Fotos-App hochladen, nicht aus „Dateien“.', I18n::t('error.size', ['size' => '3.7', 'max' => '1.0']), 'German placeholders filled');
+		expect(true, str_starts_with(I18n::translate($kirby, 'error.heic'), 'HEIC-Fotos können hier nicht verarbeitet werden.'), 'German string');
+		expect('Die Datei ist 3.7 MB groß, erlaubt sind 1.0 MB. Tipp: das Foto aus der Fotos-App hochladen, nicht aus „Dateien“.', I18n::translate($kirby, 'error.size', ['size' => '3.7', 'max' => '1.0']), 'German placeholders filled');
 		I18n::setLanguage('en');
 	}
 
 	public function testMissingKeyComesBackAsTheKey(): void
 	{
-		expect('nope.key', I18n::t('nope.key'), 'missing key comes back as the key');
-		expect('nope.key', I18n::t('nope.key', ['name' => 'x']), 'missing key with values comes back as the key');
+		$kirby = $this->app();
+		expect('nope.key', I18n::translate($kirby, 'nope.key'), 'missing key comes back as the key');
+		expect('nope.key', I18n::translate($kirby, 'nope.key', ['name' => 'x']), 'missing key with values comes back as the key');
+	}
+
+	public function testTheOneXMethodGivesTheTranslateTextAndIsDeprecated(): void
+	{
+		I18n::setLanguage('en');
+		$text = null;
+		$deprecations = $this->collectDeprecations(function () use (&$text): void {
+			$this->app(['debug' => true]);
+			$text = I18n::t('error.heic');
+		});
+		expect('HEIC photos cannot be processed here. Please upload a JPEG (on an iPhone: Settings → Camera → Formats → Most Compatible).', $text, 't() gives the translate() text');
+		expect(['Sayamaapps\Tegaru\I18n::t() is deprecated, use Sayamaapps\Tegaru\I18n::translate()'], $deprecations, 't() is reported in debug mode');
 	}
 
 	public function testUnknownLanguageFallsBackToEnglish(): void
