@@ -83,17 +83,15 @@ Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
 Write each option as `tegaru.<name>` in your site config, as in step 1. `null` means "not set"; invalid values fall back to the default. The flat and the nested form (`'tegaru' => ['active' => true]`) both work.
 
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `active` | boolean | `false` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
-| `maxEdge` | integer | `2400` | Longest edge of the browser-side result, in px. |
-| `quality` | number | `0.85` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
-| `minBytes` | integer | `1048576` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
-| `maxUploadBytes` | integer | `15728640` | Server cap per file (15 MB). |
-| `maxPixels` | integer | `40000000` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
-| `language` | string | site default language | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
-
-Example: `'tegaru.maxEdge' => 1920,`
+| Option | Type | Default | Example | Description |
+|---|---|---|---|---|
+| `active` | boolean | `false` | `'tegaru.active' => true,` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
+| `maxEdge` | integer | `2400` | `'tegaru.maxEdge' => 1920,` | Longest edge of the browser-side result, in px. |
+| `quality` | number | `0.85` | `'tegaru.quality' => 0.8,` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
+| `minBytes` | integer | `1048576` | `'tegaru.minBytes' => 0,` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
+| `maxUploadBytes` | integer | `15728640` | `'tegaru.maxUploadBytes' => 25165824,` | Server cap per file (15 MB). |
+| `maxPixels` | integer | `40000000` | `'tegaru.maxPixels' => 24000000,` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
+| `language` | string | site default language | `'tegaru.language' => 'de',` | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
 
 ## Deprecations
 
@@ -114,7 +112,7 @@ Breaking changes, not part of 1.x:
 - The functions `tegaru_guard()` and `tegaru_i18n()`, `I18n::t()` and the `Tegaru\` class aliases are removed.
 - The test access of the Panel script (`window.tegaru`) is removed.
 
-Unchanged: the translation keys `tegaru.<key>`, the route `GET /api/tegaru/options`, the hook names, and the blueprint and Panel field names.
+Unchanged: the translation keys `tegaru.<key>`, the route `GET /api/tegaru/options`, the hook names, and the blueprint and Panel field names. From 1.x on, each message is also served as `sayamaapps.tegaru.<key>`, so a site can use the 2.0 spelling for its own translations; Tegaru itself reads `tegaru.<key>` until 2.0.
 
 ## Privacy
 
@@ -122,7 +120,7 @@ Tegaru processes no visitor data. Nothing is stored in the browser, and nothing 
 
 ## Maintenance
 
-Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. The Panel messages are Kirby translations under `tegaru.<key>`, registered in `config/translations.php`, so a site can override them. The server messages come from `translations/`. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
+Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. The Panel messages are Kirby translations under `tegaru.<key>`, registered in `config/translations.php`, so a site can override them. The server messages come from `translations/` through `I18n::text()`, not from Kirby's translations: a refused upload gets its message without a Kirby app, as in 1.x. The lock file `composer.lock` is committed, and CI runs the lowest, the locked and the highest dependency versions. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
 
 ## License
 
