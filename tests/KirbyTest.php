@@ -104,16 +104,16 @@ final class KirbyTest extends TestCase
 		// The plugin registers itself with App::plugin() before the App is built. App::destroy() in
 		// tearDown() empties that registry, so it is registered again for every test.
 		require dirname(__DIR__) . '/index.php';
+
+		// Kirby commits its sessions at shutdown. Sessions live in memory, so nothing is written
+		// after tearDown() has removed the temp dir.
+		App::plugin('sayamaapps/tegaru-test', ['components' => ['session::store' => fn () => new MemorySessionStore()]]);
 	}
 
 	protected function tearDown(): void
 	{
 		App::destroy();
-
-		// Kirby commits its sessions in a shutdown function registered during the checks, which runs
-		// before this one; removing the temp dir now would make that commit fail on the session file.
-		$tmp = $this->tmp;
-		register_shutdown_function(fn () => Dir::remove($tmp));
+		Dir::remove($this->tmp);
 	}
 
 	public function testAReplacementGoesThroughTheSameSafetyNet(): void
@@ -234,5 +234,6 @@ final class KirbyTest extends TestCase
 		holds(str_starts_with((string)$en->translation('en')->get('tegaru.error.size'), 'The file is {size} MB'), 'translations: en reads the message');
 		holds(str_starts_with((string)$this->app([], true)->translation('de')->get('tegaru.error.size'), 'Die Datei ist {size} MB'), 'translations: de reads the message');
 		holds(str_starts_with((string)$en->translation('en')->get('tegaru.panel.unreadable'), '{name} could not be read'), 'translations: the Panel keys are there too');
+		holds(str_starts_with((string)$this->app([], true)->translation('de')->get('sayamaapps.tegaru.error.size'), 'Die Datei ist {size} MB'), 'translations: the 2.0 spelling is served in de too');
 	}
 }

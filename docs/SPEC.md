@@ -344,8 +344,9 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   array; (f) the hook `file.create:before` is registered; (g) `file.replace:before`
   is registered and a 20-MB replacement is refused with the size message; (h)
   the options route throws `AuthException` without a login and answers with
-  one. The temp dir is removed in a shutdown function, because Kirby commits its
-  sessions in one.
+  one. Sessions are kept in memory (`MemorySessionStore` in `tests/helpers.php`),
+  because Kirby commits its sessions at shutdown; the temp dir is removed in
+  `tearDown()`.
 
 ## Section C — Documentation (`README.md`, `CHANGELOG.md`)
 
