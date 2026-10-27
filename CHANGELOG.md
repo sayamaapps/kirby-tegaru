@@ -13,21 +13,17 @@ All notable changes to this project are documented here. Versions follow
 
 ### Added
 
-- `Sayamaapps\Tegaru\Hooks::guard()`, the upload check of the hooks, and `Sayamaapps\Tegaru\Options::applyLanguage()`, which sets the language of the server messages.
-- Options are read as `sayamaapps.tegaru.<name>`. The 1.x spelling `tegaru.<name>` keeps working as fallback.
+- `Sayamaapps\Tegaru\Hooks::guard()`, the upload check of the hooks, and `Sayamaapps\Tegaru\Options::applyLanguage()`, which sets the language of the server messages. The 1.x functions keep working.
 
 ### Changed
 
 - The classes live in the `Sayamaapps\Tegaru\` namespace and load through a class map. The 1.x class names are aliases.
-- `index.php` registers the plugin with `Kirby::plugin()`; options, translations, the API route and the hooks are defined in `config/`.
+- `index.php` registers the plugin with `Kirby::plugin()`; translations, the API route and the hooks are defined in `config/`. Behaviour is unchanged.
+- The Panel script's internals are split into functions. Behaviour is unchanged.
 
 ### Deprecated
 
-- `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), `I18n::t()` (use `I18n::translate($kirby, …)`), the `tegaru.<name>` option spelling and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. Removal is planned for 2.0. Debug mode reports each call of `tegaru_guard()`, `tegaru_i18n()` and `I18n::t()`, and the `tegaru.<name>` option spelling once per request and key. The class names report nothing.
-
-### Fixed
-
-- A JPEG with damaged markers is checked for its size without a PHP warning. In Kirby's debug mode that warning failed the upload, although the file is allowed.
+- `tegaru_guard()` (use `Hooks::guard()`), `tegaru_i18n()` (use `Options::applyLanguage()`), `I18n::t()` and the `Tegaru\Guard`, `Tegaru\I18n` and `Tegaru\Options` class names. They keep working and raise no notice. Removal is planned for 2.0. From 2.0 the options are read as `sayamaapps.tegaru.<name>` only.
 
 ## [1.1.1] — 2026-10-26
 

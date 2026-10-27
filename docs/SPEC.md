@@ -57,7 +57,7 @@ server byte-identical, only split into chunks when it exceeds
 - Nothing stored in the browser, no address of any host, no `eval`. CI
   greps for all three.
 
-## Options (`site/config/config.php`, under `sayamaapps.tegaru.`; the 1.x name `tegaru.` still works as fallback)
+## Options (`site/config/config.php`, `tegaru.<name>`, flat or nested)
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -323,8 +323,8 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   fall back, `forPanel()` shape and `format`, `language()` from the option,
   from the site language, from `locale`, fallback `en`.
 - `I18nTest.php`: same keys and the same `{placeholders}` in every language,
-  unknown language → English, `translate()` replaces values, missing key → key,
-  `t()` gives the same text and is reported as a deprecation in debug mode.
+  unknown language → English, `text()` replaces values, missing key → key,
+  `t()` gives the same text and raises no notice.
 - `PanelSignatureTest.php`: finds the installed Kirby under `vendor/getkirby/cms`,
   asserts `panel/dist/js/plugins.js` exists and mentions `created`, and that
   `panel/dist/js/index.min.js` contains the method names `pick(`, `select(`,
@@ -334,7 +334,7 @@ webp; `ftyp` at offset 4 with brand in `Guard::HEIC_BRANDS` → heic, brand
   `require index.php` **before** `new App(...)` — `App::plugin()` fills a
   static registry that the App reads while it is built; registered later,
   the routes and translations are missing (verified on Kirby 5.6.1). Pass
-  `roots` to a temp dir and `options`: (a) `sayamaapps.tegaru.active` off → `Hooks::guard()` returns for a 20-MB
+  `roots` to a temp dir and `options`: (a) `tegaru.active` off → `Hooks::guard()` returns for a 20-MB
   temp file; (b) on → throws `InvalidArgumentException` whose message is the
   German text when the site's default language is `de`, English otherwise;
   (c) the plugin translations contain `tegaru.error.size` in `en` and `de`;

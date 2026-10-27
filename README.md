@@ -47,7 +47,7 @@ Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
    ```php
    return [
-       'sayamaapps.tegaru.active' => true,
+       'tegaru.active' => true,
    ];
    ```
 
@@ -81,11 +81,11 @@ Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
 ## Options
 
-Write each option as `sayamaapps.tegaru.<name>` in your site config, as in step 1. `null` means "not set"; invalid values fall back to the default. The 1.x spelling `tegaru.<name>` still works, see [Deprecations](#deprecations).
+Write each option as `tegaru.<name>` in your site config, as in step 1. `null` means "not set"; invalid values fall back to the default. The flat and the nested form (`'tegaru' => ['active' => true]`) both work.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `active` | boolean | `false` | Master switch. Off: the hooks let everything through and the script changes nothing. |
+| `active` | boolean | `false` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
 | `maxEdge` | integer | `2400` | Longest edge of the browser-side result, in px. |
 | `quality` | number | `0.85` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
 | `minBytes` | integer | `1048576` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
@@ -93,19 +93,26 @@ Write each option as `sayamaapps.tegaru.<name>` in your site config, as in step 
 | `maxPixels` | integer | `40000000` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
 | `language` | string | site default language | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
 
-Example: `'sayamaapps.tegaru.maxEdge' => 1920,`
+Example: `'tegaru.maxEdge' => 1920,`
 
 ## Deprecations
 
-Deprecated in this release, removed in 2.0 (planned). Each replacement works now; the old names keep working until then. Debug mode reports each call of the functions and of `I18n::t()`, and the 1.x option spelling; the class names are not reported.
+Deprecated in 1.x: they keep working and raise no notice. The docs and the code name the replacement.
 
-| 1.x | Now | Notes |
+| 1.x | Replacement | Notes |
 |---|---|---|
-| `tegaru.<option>` in the site config | `sayamaapps.tegaru.<option>` | Still read as fallback when the new name is not set. The 1.x form may be nested (`'tegaru' => ['active' => true]`); the new form is written flat. |
 | `tegaru_guard($kirby, $upload)` | `Sayamaapps\Tegaru\Hooks::guard($kirby, $upload)` | Global function, kept as a wrapper. |
 | `tegaru_i18n()` | `Sayamaapps\Tegaru\Options::applyLanguage($kirby)` | Global function, kept as a wrapper. |
-| `Tegaru\I18n::t($key, $values)` | `Sayamaapps\Tegaru\I18n::translate($kirby, $key, $values)` | Method, kept as a wrapper: it uses the current Kirby app. |
+| `Tegaru\I18n::t($key, $values)` | none | Kept. It returns the same text from the tables and needs no Kirby app. |
 | `Tegaru\Guard`, `Tegaru\I18n`, `Tegaru\Options` | `Sayamaapps\Tegaru\Guard`, `Sayamaapps\Tegaru\I18n`, `Sayamaapps\Tegaru\Options` | Class aliases. `instanceof` and type hints keep working. |
+
+## Planned for 2.0
+
+Breaking changes, not part of 1.x:
+
+- Options are read as `sayamaapps.tegaru.<name>` only. The `tegaru.<name>` spelling stops being read.
+- The functions `tegaru_guard()` and `tegaru_i18n()`, `I18n::t()` and the `Tegaru\` class aliases are removed.
+- The test access of the Panel script (`window.tegaru`) is removed.
 
 Unchanged: the translation keys `tegaru.<key>`, the route `GET /api/tegaru/options`, the hook names, and the blueprint and Panel field names.
 
@@ -115,7 +122,7 @@ Tegaru processes no visitor data. Nothing is stored in the browser, and nothing 
 
 ## Maintenance
 
-Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Server messages are Kirby translations under `tegaru.<key>`. Their strings live in `translations/` and are registered in `config/translations.php`; a site can override any of them in its own Kirby translations. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
+Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. The Panel messages are Kirby translations under `tegaru.<key>`, registered in `config/translations.php`, so a site can override them. The server messages come from `translations/`. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
 
 ## License
 
