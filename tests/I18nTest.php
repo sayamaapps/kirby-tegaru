@@ -88,6 +88,17 @@ final class I18nTest extends TestCase
 		expect('nope.key', I18n::text('nope.key', ['name' => 'x']), 'missing key with values comes back as the key');
 	}
 
+	public function testTheKirbyTranslationsCarryBothSpellingsWithTheSameText(): void
+	{
+		$translations = I18n::kirbyTranslations();
+		foreach (I18n::LANGUAGES as $language) {
+			foreach (I18n::table($language) as $key => $text) {
+				expect($text, $translations[$language]['tegaru.' . $key] ?? null, "$language: tegaru.$key");
+				expect($text, $translations[$language]['sayamaapps.tegaru.' . $key] ?? null, "$language: sayamaapps.tegaru.$key");
+			}
+		}
+	}
+
 	public function testTheOneXMethodGivesTheSameTextWithoutANotice(): void
 	{
 		I18n::setLanguage('en');

@@ -37,7 +37,9 @@ class I18n
 
 	/**
 	 * The messages as Kirby translations, keyed `tegaru.<key>` per language, as
-	 * the Panel script reads them (`panel.$t('tegaru.<key>')`).
+	 * the Panel script reads them (`panel.$t('tegaru.<key>')`). Each message is
+	 * also served as `sayamaapps.tegaru.<key>`, the spelling of 2.0, so that a
+	 * site can switch its own translations early. Nothing in 1.x reads it.
 	 *
 	 * @return array<string, array<string,string>>
 	 * @internal
@@ -49,6 +51,7 @@ class I18n
 		foreach (self::LANGUAGES as $language) {
 			foreach (self::table($language) as $key => $text) {
 				$translations[$language]['tegaru.' . $key] = $text;
+				$translations[$language]['sayamaapps.tegaru.' . $key] = $text;
 			}
 		}
 		return $translations;
