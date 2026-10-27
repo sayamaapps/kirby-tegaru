@@ -57,17 +57,17 @@ class Guard
 	/**
 	 * Checks an uploaded file. Null means the file may be created.
 	 *
+	 * The order is the one of 1.x: size first, so an unreadable file over the
+	 * cap is still refused for its size, then the first bytes, then the pixels.
+	 * Unreadable files that are within the cap are left to Kirby's own checks.
+	 *
 	 * @return array{key:string,values:array<string,string>}|null
 	 * @since 1.0.0
+	 * @SuppressWarnings("PHPMD.ErrorControlOperator")
 	 */
 	public static function inspect(string $path, int $maxBytes, int $maxPixels): array|null
 	{
-		// Unreadable files are left to Kirby's own checks.
-		if (is_file($path) === false || is_readable($path) === false) {
-			return null;
-		}
-
-		$size = filesize($path);
+		$size = @filesize($path);
 		if ($size === false) {
 			return null;
 		}
@@ -75,7 +75,14 @@ class Guard
 			return ['key' => 'error.size', 'values' => ['size' => self::mib($size), 'max' => self::mib($maxBytes)]];
 		}
 
-		$type = self::typeOf($path);
+		$handle = @fopen($path, 'rb');
+		if ($handle === false) {
+			return null;
+		}
+		$head = (string)fread($handle, self::HEAD_BYTES);
+		fclose($handle);
+
+		$type = self::sniff($head);
 		if ($type === 'heic') {
 			return ['key' => 'error.heic', 'values' => []];
 		}
@@ -156,17 +163,5 @@ class Guard
 			return 'webp';
 		}
 		return null;
-	}
-
-	/** The format of a file, from its first bytes: see sniff(). */
-	private static function typeOf(string $path): string
-	{
-		$handle = fopen($path, 'rb');
-		if ($handle === false) {
-			return 'other';
-		}
-		$head = (string)fread($handle, self::HEAD_BYTES);
-		fclose($handle);
-		return self::sniff($head);
 	}
 }

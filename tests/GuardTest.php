@@ -64,6 +64,45 @@ final class GuardTest extends TestCase
 		expect(['key' => 'error.pixels', 'values' => ['megapixels' => '1.5', 'max' => '1.0']], $this->inspect($damaged, 15 * self::MIB, self::MP), 'damaged JPEG still checked for pixels');
 	}
 
+	public function testADirectoryFailsTheReadAsIn1x(): void
+	{
+		// 1.x: the size and the open succeed for a directory, the read fails. Kirby's error handler turns that into an exception.
+		$folder = $this->dir . '/folder';
+		mkdir($folder);
+		set_error_handler(function (int $level, string $message): bool {
+			throw new ErrorException($message, 0, $level);
+		});
+		try {
+			$this->expectException(ErrorException::class);
+			$this->inspect($folder);
+		} finally {
+			restore_error_handler();
+		}
+	}
+
+	public function testAnUnreadableFileOverTheCapIsRefusedForItsSize(): void
+	{
+		// 1.x order: the size is read before the file is opened, so the size error wins over the read error.
+		$path = $this->write('locked-big.txt', str_repeat('a', 2 * self::MIB));
+		chmod($path, 0000);
+		try {
+			expect(['key' => 'error.size', 'values' => ['size' => '2.0', 'max' => '1.0']], $this->inspect($path, self::MIB), 'unreadable over the cap: size error, as in 1.x');
+		} finally {
+			chmod($path, 0644);
+		}
+	}
+
+	public function testAnUnreadableFileWithinTheCapPasses(): void
+	{
+		$path = $this->write('locked-small.txt', 'Hallo Welt');
+		chmod($path, 0000);
+		try {
+			expect(null, $this->inspect($path), 'unreadable within the cap: left to Kirby');
+		} finally {
+			chmod($path, 0644);
+		}
+	}
+
 	public function testChecksRunInOrderSizeThenHeicThenPixels(): void
 	{
 		$heicBig = $this->write('huge.heic', self::HEIC_HEAD . str_repeat("\0", 2 * self::MIB));
