@@ -7,9 +7,9 @@ use PHPUnit\Framework\TestCase;
 use Sayamaapps\Tegaru\Options;
 
 /**
- * Options are read as sayamaapps.tegaru.<key>, with the 1.x spelling
- * tegaru.<key> as fallback. The fallback is reported as a deprecation
- * in debug mode.
+ * Options are read as tegaru.<key>, the 1.x names, and only those. The
+ * sayamaapps.tegaru.<key> names are planned for 2.0 and are not read in 1.x.
+ * No notice is raised for the 1.x spelling.
  */
 #[CoversClass(Options::class)]
 final class OptionsPrefixTest extends TestCase
@@ -70,71 +70,32 @@ final class OptionsPrefixTest extends TestCase
 		expect(2400, Options::maxEdge($kirby), 'unset: default maxEdge');
 	}
 
-	public function testTheNewSpellingIsRead(): void
+	public function testTheOneXSpellingIsRead(): void
+	{
+		$kirby = $this->app(['tegaru.active' => true, 'tegaru.maxEdge' => 1920]);
+		expect(true, Options::active($kirby), 'tegaru.active is read');
+		expect(1920, Options::maxEdge($kirby), 'tegaru.maxEdge is read');
+	}
+
+	public function testTheNewSpellingIsNotReadYet(): void
 	{
 		$kirby = $this->app(['sayamaapps.tegaru.active' => true, 'sayamaapps.tegaru.maxEdge' => 1920]);
-		expect(true, Options::active($kirby), 'sayamaapps.tegaru.active is read');
-		expect(1920, Options::maxEdge($kirby), 'sayamaapps.tegaru.maxEdge is read');
+		expect(false, Options::active($kirby), 'sayamaapps.tegaru.active is not read in 1.x');
+		expect(2400, Options::maxEdge($kirby), 'sayamaapps.tegaru.maxEdge is not read in 1.x');
 	}
 
-	public function testTheNewSpellingWinsOverTheOldOneWithoutADeprecation(): void
-	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['debug' => true, 'sayamaapps.tegaru.active' => false, 'tegaru.active' => true]);
-			expect(false, Options::active($kirby), 'sayamaapps.tegaru.active wins when both are set');
-		});
-		expect([], $deprecations, 'the old spelling is not read, so nothing is reported');
-	}
-
-	public function testTheOldSpellingIsReportedOncePerKeyAndApp(): void
+	public function testReadingRaisesNoNoticeInDebugMode(): void
 	{
 		$deprecations = $this->collectDeprecations(function (): void {
 			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
-			Options::active($kirby);
-			Options::active($kirby);
+			expect(true, Options::active($kirby), 'tegaru.active is read in debug mode');
 			Options::forPanel($kirby);
-			expect(true, Options::active($kirby), 'tegaru.active keeps being read as fallback');
-
-			Options::active($this->app(['debug' => true, 'tegaru.active' => true]));
 		});
-		expect(
-			[
-				'Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active',
-				'Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active',
-			],
-			$deprecations,
-			'one report per App; a second App reports again'
-		);
+		expect([], $deprecations, 'no runtime notice for the 1.x spelling');
 	}
 
-	public function testTheOldSpellingIsSilentOutsideDebugMode(): void
-	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['tegaru.active' => true]);
-			expect(true, Options::active($kirby), 'tegaru.active is read without debug');
-		});
-		expect([], $deprecations, 'no deprecation without debug mode');
-	}
-
-	public function testTheOldSpellingStillWorksAndIsDeprecatedInDebugMode(): void
-	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
-			expect(true, Options::active($kirby), 'tegaru.active is read as fallback');
-		});
-		expect(['Tegaru: tegaru.active is deprecated, use sayamaapps.tegaru.active'], $deprecations, 'the fallback is reported');
-	}
-
-	public function testTheOptionsBlockDeclaresEveryKeyWithANullDefault(): void
-	{
-		$block = require dirname(__DIR__) . '/config/options.php';
-		expect(['active', 'language', 'maxEdge', 'maxPixels', 'maxUploadBytes', 'minBytes', 'quality'], array_keys($block), 'the seven keys');
-		expect([null, null, null, null, null, null, null], array_values($block), 'null defaults: the 1.x fallback must stay visible');
-	}
-
-	public function testThePrefixConstantsKeepTheirValues(): void
+	public function testThePrefixKeepsItsValue(): void
 	{
 		expect('tegaru.', Options::PREFIX, 'PREFIX is the 1.x prefix, unchanged for code that reads it');
-		expect('sayamaapps.tegaru.', Options::OPTION_PREFIX, 'OPTION_PREFIX is the prefix of the new names');
 	}
 }

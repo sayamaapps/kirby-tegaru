@@ -17,7 +17,6 @@ require_once __DIR__ . '/legacy.php';
 Kirby::plugin(
 	name: 'sayamaapps/tegaru',
 	extends: [
-		'options'      => require __DIR__ . '/config/options.php',
 		'translations' => require __DIR__ . '/config/translations.php',
 		'api'          => require __DIR__ . '/config/api.php',
 		'hooks'        => require __DIR__ . '/config/hooks.php',

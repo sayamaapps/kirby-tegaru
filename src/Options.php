@@ -3,22 +3,16 @@
 namespace Sayamaapps\Tegaru;
 
 use Kirby\Cms\App;
-use Kirby\Cms\Helpers;
-use WeakMap;
 
 /**
- * Reads Tegaru's options: `sayamaapps.tegaru.<key>`, falling back to the 1.x
- * name `tegaru.<key>`.
+ * Reads Tegaru's options: `tegaru.<key>`.
  *
  * `null` counts as "not set", like Kirby's own option(), so a key set to
- * null falls back to the default. The 1.x names work flat and nested
- * (`'tegaru' => ['active' => true]`). The new names are written flat: once the
- * plugin declares its options, Kirby reads the nested form of a dotted
- * prefix as unset.
+ * null falls back to the default. Both spellings work, flat
+ * (`'tegaru.active' => true`) and nested (`'tegaru' => ['active' => true]`).
  *
- * Defaults are given here and at the call sites. The `options` block of the
- * plugin (config/options.php) lists the keys with null: a default there would
- * hide the 1.x spelling.
+ * Defaults are passed as fallback values at each call, NOT in an 'options'
+ * block of the plugin (Kirby would file them under sayamaapps.tegaru.*).
  *
  * @package   Kirby Tegaru
  * @author    Simon Räder
@@ -65,20 +59,14 @@ class Options
 	 */
 	public const FORMAT = 1;
 
-	/** Option prefix; `PREFIX` is read as the fallback until 2.0. */
-	public const OPTION_PREFIX = 'sayamaapps.tegaru.';
-
 	/**
 	 * Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it.
 	 * @since 1.0.0
 	 */
 	public const PREFIX = 'tegaru.';
 
-	/** Keys whose 1.x spelling was already reported, per App. Weak, so a destroyed App is forgotten. */
-	private static WeakMap|null $reported = null;
-
 	/**
-	 * Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing.
+	 * Off by default: without `'tegaru.active' => true` the plugin does nothing.
 	 * @since 1.0.0
 	 */
 	public static function active(App $kirby): bool
@@ -86,7 +74,10 @@ class Options
 		return self::get($kirby, 'active', false) === true;
 	}
 
-	/** Sets I18n's language for this request from language(). Called before any message is built. */
+	/**
+	 * Sets I18n's language for this request from language(). Called before any message is built.
+	 * @since 1.2.0
+	 */
 	public static function applyLanguage(App $kirby): void
 	{
 		I18n::setLanguage(self::language($kirby));
@@ -115,24 +106,12 @@ class Options
 	}
 
 	/**
-	 * The value of an option: `sayamaapps.tegaru.<key>`, else the 1.x
-	 * `tegaru.<key>` (reported as deprecated in debug mode), else $default.
+	 * The value of an option: `tegaru.<key>`, else $default.
 	 * @since 1.0.0
 	 */
 	public static function get(App $kirby, string $key, mixed $default = null): mixed
 	{
-		$value = $kirby->option(self::OPTION_PREFIX . $key);
-		if ($value !== null) {
-			return $value;
-		}
-
-		// The 1.x spelling still works, with a deprecation (README, Deprecations).
-		$legacy = $kirby->option(self::PREFIX . $key);
-		if ($legacy !== null) {
-			self::reportLegacy($kirby, $key);
-		}
-
-		return $legacy ?? $default;
+		return $kirby->option(self::PREFIX . $key) ?? $default;
 	}
 
 	/**
@@ -223,25 +202,5 @@ class Options
 		}
 		$value = (float)$value;
 		return $value >= 0.1 && $value <= 1.0 ? $value : self::DEFAULT_QUALITY;
-	}
-
-	/**
-	 * Reports the 1.x spelling of a key once per App, not once per read: the
-	 * Panel route and the hooks read the same keys again in one request.
-	 */
-	private static function reportLegacy(App $kirby, string $key): void
-	{
-		self::$reported ??= new WeakMap();
-		$seen = self::$reported[$kirby] ?? [];
-		if (isset($seen[$key])) {
-			return;
-		}
-		$seen[$key] = true;
-		self::$reported[$kirby] = $seen;
-
-		Helpers::deprecated(
-			'Tegaru: tegaru.' . $key . ' is deprecated, use ' . self::OPTION_PREFIX . $key,
-			'option-prefix'
-		);
 	}
 }

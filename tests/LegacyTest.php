@@ -10,7 +10,7 @@ use Sayamaapps\Tegaru\I18n;
 
 /**
  * The 1.x functions of legacy.php: they still work, delegate to the class
- * methods and report a deprecation in debug mode (README, Deprecations).
+ * methods and raise no notice, in debug mode either (README, Deprecations).
  */
 #[CoversNothing]
 final class LegacyTest extends TestCase
@@ -71,7 +71,7 @@ final class LegacyTest extends TestCase
 		Dir::remove($this->tmp);
 	}
 
-	public function testTheOldGuardFunctionRefusesLikeTheHookAndIsDeprecated(): void
+	public function testTheOldGuardFunctionRefusesLikeTheHookWithoutANotice(): void
 	{
 		require_once dirname(__DIR__) . '/legacy.php';
 
@@ -80,7 +80,7 @@ final class LegacyTest extends TestCase
 
 		$refused = null;
 		$deprecations = $this->collectDeprecations(function () use ($big, &$refused): void {
-			$kirby = $this->app(['debug' => true, 'sayamaapps.tegaru.active' => true]);
+			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
 			try {
 				tegaru_guard($kirby, new Upload($big));
 			} catch (InvalidArgumentException $e) {
@@ -93,10 +93,10 @@ final class LegacyTest extends TestCase
 			$refused,
 			'tegaru_guard() refuses the 20-MB file with the hook message'
 		);
-		expect(['tegaru_guard() is deprecated, use Sayamaapps\Tegaru\Hooks::guard()'], $deprecations, 'tegaru_guard() is reported');
+		expect([], $deprecations, 'tegaru_guard() raises no runtime notice');
 	}
 
-	public function testTheOldLanguageFunctionSetsTheLanguageAndIsDeprecated(): void
+	public function testTheOldLanguageFunctionSetsTheLanguageWithoutANotice(): void
 	{
 		require_once dirname(__DIR__) . '/legacy.php';
 
@@ -106,7 +106,7 @@ final class LegacyTest extends TestCase
 		});
 
 		expect('de', I18n::language(), 'tegaru_i18n() sets the language of the site');
-		expect(['tegaru_i18n() is deprecated, use Sayamaapps\Tegaru\Options::applyLanguage()'], $deprecations, 'tegaru_i18n() is reported');
+		expect([], $deprecations, 'tegaru_i18n() raises no runtime notice');
 		I18n::setLanguage('en');
 	}
 }

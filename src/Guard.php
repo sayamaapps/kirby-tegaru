@@ -42,22 +42,16 @@ class Guard
 	private const MIB = 1048576;
 
 	/**
-	 * getimagesize() with its warnings dropped for this call only. A JPEG with
-	 * damaged markers still gives its size, and PHP warns about it; in Kirby's
-	 * debug mode that warning becomes an exception and the upload fails, though
-	 * the file is allowed. The package keeps the @ operator out of its code, so
-	 * the warning is handled here and nowhere else.
+	 * getimagesize() with its warnings dropped, as in 1.x: a JPEG with damaged
+	 * markers still gives its size, and PHP warns about it. The error control
+	 * operator is kept on purpose, because 1.x behaves this way.
 	 *
 	 * @return array<array-key,mixed>|false
+	 * @SuppressWarnings("PHPMD.ErrorControlOperator")
 	 */
 	private static function imageSize(string $path): array|false
 	{
-		set_error_handler(static fn (): bool => true);
-		try {
-			return getimagesize($path);
-		} finally {
-			restore_error_handler();
-		}
+		return @getimagesize($path);
 	}
 
 	/**

@@ -205,14 +205,10 @@ final class KirbyTest extends TestCase
 		expect(null, $this->guard($this->app(['tegaru.active' => true, 'tegaru.maxUploadBytes' => 25 * self::MB]), $big), 'on: cap raised by the option, the 20 MB file passes');
 	}
 
-	public function testTheHookRunsWithTheNewOptionNameInFlatForm(): void
+	public function testTheNewOptionNameIsNotReadYet(): void
 	{
 		$big = $this->fixtureBig();
-		expect(
-			'The file is 20.0 MB; the maximum is 15.0 MB. Tip: upload the photo from the Photos app, not from Files.',
-			$this->guard($this->app(['sayamaapps.tegaru.active' => true]), $big),
-			'on with sayamaapps.tegaru.active: the size message'
-		);
+		expect(null, $this->guard($this->app(['sayamaapps.tegaru.active' => true]), $big), 'sayamaapps.tegaru.active is not read in 1.x: the 20 MB file passes');
 	}
 
 	public function testTheOptionsRouteNeedsALoggedInPanelUser(): void

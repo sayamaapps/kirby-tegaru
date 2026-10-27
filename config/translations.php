@@ -2,5 +2,5 @@
 
 use Sayamaapps\Tegaru\I18n;
 
-// The messages as Kirby translations `tegaru.<key>`, for translate() and for the Panel script.
+// The messages as Kirby translations `tegaru.<key>`, for the Panel script.
 return I18n::kirbyTranslations();

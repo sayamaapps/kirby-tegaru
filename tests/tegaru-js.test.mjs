@@ -10,22 +10,6 @@ import vm from 'node:vm';
 
 const source = readFileSync(new URL('../index.js', import.meta.url), 'utf8');
 
-// The pure helpers and the time limit are reached through a line this harness
-// adds before the script's closing `})();`. The shipped file has no test hook.
-const CLOSING = /\}\)\(\);\s*$/;
-if (!CLOSING.test(source)) {
-  throw new Error('index.js must end with its IIFE call');
-}
-const instrumented = source.replace(CLOSING, `
-  __tegaruHarness({
-    sniff: sniff, targetSize: targetSize, isCameraName: isCameraName, stamp: stamp,
-    cameraName: cameraName, formatBytes: formatBytes, decide: decide,
-    timeLimit: function () { return TIME_LIMIT; },
-    setTimeLimit: function (ms) { TIME_LIMIT = ms; }
-  });
-})();
-`);
-
 const ascii = (text) => Array.from(text, (c) => c.charCodeAt(0));
 const ftyp = (brand) => [0, 0, 0, 0x18, ...ascii('ftyp'), ...ascii(brand), 0, 0, 0, 0];
 const JPEG = [0xff, 0xd8, 0xff, 0xe1, 0x00, 0x10];
@@ -163,7 +147,6 @@ function setup({
   let urls = 0;
 
   const dialog = { isOpen: false, id: null, props: null }; // Kirby's dialog store as far as Tegaru reads it
-  let tegaru = null; // the harness object, set when the script runs
   const window = {
     panel: {
       dialog: dialogStore ? dialog : undefined,
@@ -211,9 +194,6 @@ function setup({
   const context = {
     window,
     document,
-    __tegaruHarness(harness) {
-      tegaru = harness;
-    },
     URL: {
       createObjectURL(file) {
         urls += 1;
@@ -257,7 +237,7 @@ function setup({
       return clearTimeout(handle);
     },
   };
-  vm.runInNewContext(instrumented, context);
+  vm.runInNewContext(source, context);
 
   const app = {
     $panel: { upload },
@@ -281,7 +261,7 @@ function setup({
   return {
     app, api, upload, dialog, notifications, infos, registered, decodes, events, encodes, revoked, timers,
     urlCount: () => urls,
-    tegaru,
+    tegaru: window.tegaru,
     filesField: registered[0].extension.components?.['k-files-field'],
   };
 }
@@ -439,7 +419,7 @@ test('a failed preparation does not block submit, and the next select asks again
 
 test('a picture still not ready at the time limit goes up as it is; submit is not held', async () => {
   const s = setup({ decodeGate: () => new Promise(() => {}) });
-  s.tegaru.setTimeLimit(10);
+  s.tegaru.timeLimit = 10;
   const a = photo('IMG_0002.jpeg', JPEG, { size: 2200000 });
   s.upload.select([a]);
   assert.equal(await s.upload.submit(), 'submitted');
@@ -451,7 +431,7 @@ test('a picture still not ready at the time limit goes up as it is; submit is no
 test('a result that arrives after the time limit changes nothing', async () => {
   const late = deferred();
   const s = setup({ decodeGate: () => late.promise, encodedSize: () => 1000000 });
-  s.tegaru.setTimeLimit(10);
+  s.tegaru.timeLimit = 10;
   const a = photo('IMG_0002.jpeg', JPEG, { size: 2200000 });
   s.upload.select([a]);
   await s.upload.submit();
@@ -651,7 +631,7 @@ test('a name typed before the settings arrive is kept: a late answer does not re
 test('settings that never arrive: a camera capture keeps its name, since Tegaru cannot tell it is active', async () => {
   const s = setup();
   s.api.hang = true;
-  s.tegaru.setTimeLimit(10);
+  s.tegaru.timeLimit = 10;
   const a = photo('image.jpg', JPEG, { size: 2200000 });
   s.upload.select([a]);
   assert.equal(await s.upload.submit(), 'submitted');
@@ -760,7 +740,7 @@ test('without select and submit: one console.info, nothing wrapped', () => {
 });
 
 test('the time limit is 20 seconds by default', () => {
-  assert.equal(setup().tegaru.timeLimit(), 20000);
+  assert.equal(setup().tegaru.timeLimit, 20000);
 });
 
 test('a picture ready before the limit clears its timer', async () => {
@@ -774,7 +754,7 @@ test('a picture ready before the limit clears its timer', async () => {
 
 test('a JPEG past the time limit goes up as it is: no removal, no message', async () => {
   const s = setup({ decodeGate: () => new Promise(() => {}) });
-  s.tegaru.setTimeLimit(10);
+  s.tegaru.timeLimit = 10;
   const a = photo('IMG_0002.jpeg', JPEG, { size: 2200000 });
   s.upload.select([a]);
   await s.upload.submit();
@@ -793,7 +773,7 @@ test('an item that expires while it waits for a slot is never decoded', async ()
       return null;
     },
   });
-  s.tegaru.setTimeLimit(10);
+  s.tegaru.timeLimit = 10;
   s.upload.select([
     photo('IMG_0001.jpeg', JPEG, { size: 2200000 }),
     photo('IMG_0002.jpeg', JPEG, { size: 2200000 }),
@@ -847,7 +827,7 @@ test('a cancelled selection frees the way: its waiting items are not decoded and
     },
     encodedSize: () => 1000000,
   });
-  s.tegaru.setTimeLimit(50);
+  s.tegaru.timeLimit = 50;
   s.upload.select([
     photo('IMG_0001.jpeg', JPEG, { size: 2200000 }),
     photo('IMG_0002.jpeg', JPEG, { size: 2200000 }),
@@ -897,7 +877,7 @@ test('a photo cut by Kirby while the click waits is no cancel: the click uploads
     encodedSize: () => 1000000,
   });
   const a = photo('IMG_0001.jpeg', JPEG, { size: 2200000 });
-  s.tegaru.setTimeLimit(200); // the cut photo's decode never ends; its timer must not keep the process alive
+  s.tegaru.timeLimit = 200; // the cut photo's decode never ends; its timer must not keep the process alive
   s.upload.select([a]);
   const click = s.upload.submit();
   await settle();
@@ -979,7 +959,7 @@ test('a photo removed by hand while the click waits is not waited for', async ()
     decodeGate: (name) => (name === 'IMG_0001.jpeg' ? new Promise(() => {}) : null),
     encodedSize: () => 1000000,
   });
-  s.tegaru.setTimeLimit(2000); // well above the poll, so only the poll can end the wait this fast
+  s.tegaru.timeLimit = 2000; // well above the poll, so only the poll can end the wait this fast
   s.upload.select([
     photo('IMG_0001.jpeg', JPEG, { size: 2200000 }),
     photo('IMG_0002.jpeg', JPEG, { size: 2200000 }),
