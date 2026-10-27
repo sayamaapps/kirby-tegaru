@@ -593,7 +593,7 @@
           item.tegaru = 'kept';
         }
         resolve();
-      }, TIME_LIMIT);
+      }, window.tegaru.timeLimit);
     });
     var job = Promise.race([prepare(state, item), limit])
       .catch(function () {
@@ -837,6 +837,19 @@
       Boolean(upload) && typeof upload.pick === 'function' &&
       selectButton(field.buttons || []) >= 0;
   }
+
+  // Test access only (@internal, @deprecated): the pure helpers and the time
+  // limit, read by tests/tegaru-js.test.mjs. Not part of the public API; removed in 2.0.
+  window.tegaru = {
+    sniff: sniff,
+    targetSize: targetSize,
+    isCameraName: isCameraName,
+    stamp: stamp,
+    cameraName: cameraName,
+    formatBytes: formatBytes,
+    decide: decide,
+    timeLimit: TIME_LIMIT
+  };
 
   if (!window.panel || typeof window.panel.plugin !== 'function') {
     return;
