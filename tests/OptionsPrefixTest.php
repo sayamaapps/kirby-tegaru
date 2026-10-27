@@ -70,11 +70,14 @@ final class OptionsPrefixTest extends TestCase
 		expect(2400, Options::maxEdge($kirby), 'unset: default maxEdge');
 	}
 
-	public function testTheOneXSpellingIsRead(): void
+	public function testReadingRaisesNoNoticeInDebugMode(): void
 	{
-		$kirby = $this->app(['tegaru.active' => true, 'tegaru.maxEdge' => 1920]);
-		expect(true, Options::active($kirby), 'tegaru.active is read');
-		expect(1920, Options::maxEdge($kirby), 'tegaru.maxEdge is read');
+		$deprecations = $this->collectDeprecations(function (): void {
+			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
+			expect(true, Options::active($kirby), 'tegaru.active is read in debug mode');
+			Options::forPanel($kirby);
+		});
+		expect([], $deprecations, 'no runtime notice for the 1.x spelling');
 	}
 
 	public function testTheNewSpellingIsNotReadYet(): void
@@ -84,14 +87,11 @@ final class OptionsPrefixTest extends TestCase
 		expect(2400, Options::maxEdge($kirby), 'sayamaapps.tegaru.maxEdge is not read in 1.x');
 	}
 
-	public function testReadingRaisesNoNoticeInDebugMode(): void
+	public function testTheOneXSpellingIsRead(): void
 	{
-		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
-			expect(true, Options::active($kirby), 'tegaru.active is read in debug mode');
-			Options::forPanel($kirby);
-		});
-		expect([], $deprecations, 'no runtime notice for the 1.x spelling');
+		$kirby = $this->app(['tegaru.active' => true, 'tegaru.maxEdge' => 1920]);
+		expect(true, Options::active($kirby), 'tegaru.active is read');
+		expect(1920, Options::maxEdge($kirby), 'tegaru.maxEdge is read');
 	}
 
 	public function testThePrefixKeepsItsValue(): void
