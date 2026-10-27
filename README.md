@@ -114,7 +114,7 @@ Tegaru processes no visitor data. Nothing is stored in the browser, and nothing 
 
 ## Maintenance
 
-Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Server messages come from Tegaru's own tables in `translations/`, not from Kirby's translation layer, so a refused upload reads the same whatever the Kirby translation setup is. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
+Tests: `composer test`, and `node --test tests/*.test.mjs` for the Panel script. Server messages are Kirby translations under `tegaru.<key>`. Their strings live in `translations/` and are registered in `config/translations.php`; a site can override any of them in its own Kirby translations. Issues and pull requests are welcome, without a support promise. Report security problems privately through GitHub's vulnerability reporting. Changes: [CHANGELOG.md](https://github.com/sayamaapps/kirby-tegaru/blob/main/CHANGELOG.md).
 
 ## License
 
