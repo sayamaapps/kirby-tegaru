@@ -5,14 +5,17 @@ namespace Sayamaapps\Tegaru;
 use Kirby\Cms\App;
 
 /**
- * Reads Tegaru's options: `tegaru.<key>`.
+ * Reads Tegaru's options: `sayamaapps.tegaru.<key>`, falling back to the 1.x
+ * name `tegaru.<key>`.
  *
- * `null` counts as "not set", like Kirby's own option(), so a key set to
- * null falls back to the default. Both spellings work, flat
- * (`'tegaru.active' => true`) and nested (`'tegaru' => ['active' => true]`).
+ * The flat form (`'sayamaapps.tegaru.active' => true`) is the one to use. The
+ * nested form (`'tegaru' => ['active' => true]`) works for the 1.x prefix
+ * only: Kirby resolves `sayamaapps.tegaru.*` through the plugin's own options
+ * block first, which shadows a nested `sayamaapps` array.
  *
- * Defaults are passed as fallback values at each call, NOT in an 'options'
- * block of the plugin (Kirby would file them under sayamaapps.tegaru.*).
+ * Defaults are given here and at the call sites. The `options` block of the
+ * plugin (config/options.php) lists the keys with null: a default there would
+ * hide the 1.x spelling.
  *
  * @package   Kirby Tegaru
  * @author    Simon Räder
@@ -60,13 +63,21 @@ class Options
 	public const FORMAT = 1;
 
 	/**
-	 * Option prefix of 1.x. Kept with its 1.x value, because code outside the plugin may read it.
+	 * Option prefix since 1.3.
+	 * @since 1.3.0
+	 */
+	public const OPTION_PREFIX = 'sayamaapps.tegaru.';
+
+	/**
+	 * Option prefix of 1.x (`tegaru.<key>`). Still read as a fallback until 2.0.
+	 *
+	 * @deprecated 1.3 use OPTION_PREFIX; removal planned for 2.0
 	 * @since 1.0.0
 	 */
 	public const PREFIX = 'tegaru.';
 
 	/**
-	 * Off by default: without `'tegaru.active' => true` the plugin does nothing.
+	 * Off by default: without `'sayamaapps.tegaru.active' => true` the plugin does nothing.
 	 * @since 1.0.0
 	 */
 	public static function active(App $kirby): bool
@@ -106,16 +117,23 @@ class Options
 	}
 
 	/**
-	 * The value of an option: `tegaru.<key>`, else $default.
+	 * Reads an option under the sayamaapps.tegaru.* spelling, then under the
+	 * 1.x tegaru.* spelling, which is read silently (README, Deprecations).
+	 * Returns $default when neither is set.
 	 * @since 1.0.0
 	 */
 	public static function get(App $kirby, string $key, mixed $default = null): mixed
 	{
+		$value = $kirby->option(self::OPTION_PREFIX . $key);
+		if ($value !== null) {
+			return $value;
+		}
+
 		return $kirby->option(self::PREFIX . $key) ?? $default;
 	}
 
 	/**
-	 * Language of the messages: `tegaru.language`, otherwise the site's
+	 * Language of the messages: `sayamaapps.tegaru.language`, otherwise the site's
 	 * default language, otherwise the first two letters of Kirby's `locale`
 	 * option, otherwise English. Only languages Tegaru ships are returned.
 	 * @since 1.0.0

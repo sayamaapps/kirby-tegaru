@@ -47,7 +47,7 @@ Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
    ```php
    return [
-       'tegaru.active' => true,
+       'sayamaapps.tegaru.active' => true,
    ];
    ```
 
@@ -81,17 +81,17 @@ Pick one of three ways. The plugin always ends up in `site/plugins/tegaru/`.
 
 ## Options
 
-Write each option as `tegaru.<name>` in your site config, as in step 1. `null` means "not set"; invalid values fall back to the default. The flat and the nested form (`'tegaru' => ['active' => true]`) both work.
+Write each option as `sayamaapps.tegaru.<name>` in your site config, flat, as in step 1. `null` means "not set"; invalid values fall back to the default. The 1.x name `tegaru.<name>` still works as a fallback until 2.0, flat or nested, and is read without a warning. If both names are set, the new one wins. See [Deprecations](#deprecations).
 
 | Option | Type | Default | Example | Description |
 |---|---|---|---|---|
-| `active` | boolean | `false` | `'tegaru.active' => true,` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
-| `maxEdge` | integer | `2400` | `'tegaru.maxEdge' => 1920,` | Longest edge of the browser-side result, in px. |
-| `quality` | number | `0.85` | `'tegaru.quality' => 0.8,` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
-| `minBytes` | integer | `1048576` | `'tegaru.minBytes' => 0,` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
-| `maxUploadBytes` | integer | `15728640` | `'tegaru.maxUploadBytes' => 25165824,` | Server cap per file (15 MB). |
-| `maxPixels` | integer | `40000000` | `'tegaru.maxPixels' => 24000000,` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
-| `language` | string | site default language | `'tegaru.language' => 'de',` | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
+| `active` | boolean | `false` | `'sayamaapps.tegaru.active' => true,` | Master switch. Off: the hooks let everything through, and the Panel script prepares no photo; the files field keeps Kirby's behaviour. |
+| `maxEdge` | integer | `2400` | `'sayamaapps.tegaru.maxEdge' => 1920,` | Longest edge of the browser-side result, in px. |
+| `quality` | number | `0.85` | `'sayamaapps.tegaru.quality' => 0.8,` | JPEG and WebP quality, 0.1–1.0. PNG has no quality setting. |
+| `minBytes` | integer | `1048576` | `'sayamaapps.tegaru.minBytes' => 0,` | Files below this size (1 MB) are left alone in the browser. `0` processes every file. |
+| `maxUploadBytes` | integer | `15728640` | `'sayamaapps.tegaru.maxUploadBytes' => 25165824,` | Server cap per file (15 MB). |
+| `maxPixels` | integer | `40000000` | `'sayamaapps.tegaru.maxPixels' => 24000000,` | Server cap in pixels (width × height) for JPEG, PNG, GIF and WebP images (40 MP). |
+| `language` | string | site default language | `'sayamaapps.tegaru.language' => 'de',` | `en` or `de` for server messages. Otherwise the site's default language, then Kirby's `locale`, then English. Panel messages follow the Panel's language. |
 
 ## Deprecations
 
@@ -99,6 +99,7 @@ Deprecated in 1.x: they keep working and raise no notice. The docs and the code 
 
 | 1.x | Replacement | Notes |
 |---|---|---|
+| `'tegaru.<option>'` in `config.php` | `'sayamaapps.tegaru.<option>'` | Still read as fallback. Rename the keys in your site config. |
 | `tegaru_guard($kirby, $upload)` | `Sayamaapps\Tegaru\Hooks::guard($kirby, $upload)` | Global function, kept as a wrapper. |
 | `tegaru_i18n()` | `Sayamaapps\Tegaru\Options::applyLanguage($kirby)` | Global function, kept as a wrapper. |
 | `Tegaru\I18n::t($key, $values)` | none | Kept. It returns the same text from the tables and needs no Kirby app. |
@@ -108,7 +109,6 @@ Deprecated in 1.x: they keep working and raise no notice. The docs and the code 
 
 Breaking changes, not part of 1.x:
 
-- Options are read as `sayamaapps.tegaru.<name>` only. The `tegaru.<name>` spelling stops being read.
 - The functions `tegaru_guard()` and `tegaru_i18n()`, `I18n::t()` and the `Tegaru\` class aliases are removed.
 - The test access of the Panel script (`window.tegaru`) is removed.
 
