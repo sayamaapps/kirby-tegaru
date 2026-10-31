@@ -9,6 +9,13 @@ All notable changes to this project are documented here. Versions follow
 - The options route (`/api/tegaru/options`) carries `format`; it increases
   only when a field is removed, renamed or changes meaning.
 
+## [1.3.0] — 2026-10-31
+
+### Changed
+
+- Options are read as `sayamaapps.tegaru.<name>`. The 1.x names `tegaru.<name>` keep working and are read without a warning. If both are set, the new one wins.
+- `Options::OPTION_PREFIX` is new. `Options::PREFIX` keeps its 1.x value.
+
 ## [1.2.0] — 2026-10-27
 
 ### Added

@@ -18,6 +18,7 @@ Kirby::plugin(
 	name: 'sayamaapps/tegaru',
 	extends: [
 		'translations' => require __DIR__ . '/config/translations.php',
+		'options'      => require __DIR__ . '/config/options.php',
 		'api'          => require __DIR__ . '/config/api.php',
 		'hooks'        => require __DIR__ . '/config/hooks.php',
 	],

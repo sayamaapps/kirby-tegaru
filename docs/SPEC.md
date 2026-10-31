@@ -57,7 +57,7 @@ server byte-identical, only split into chunks when it exceeds
 - Nothing stored in the browser, no address of any host, no `eval`. CI
   greps for all three.
 
-## Options (`site/config/config.php`, `tegaru.<name>`, flat or nested)
+## Options (`site/config/config.php`, `sayamaapps.tegaru.<name>`, flat; `tegaru.<name>` is read as the 1.x fallback)
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -372,7 +372,7 @@ The metadata behaviour of Kirby's two image drivers: GD writes no EXIF block; Im
 for PNG only (`Darkroom/ImageMagick.php`, `strip()`), so JPEG keeps EXIF and GPS.
 Every case in which a photo goes up unchanged is listed here; the README's Limits section names some of them:
 
-- every photo while `tegaru.active` is off,
+- every photo while `sayamaapps.tegaru.active` is off,
 - files below `minBytes` (1 MB by default; `0` processes every file),
 - files the browser cannot read as an image, HEIC photos among them,
 - HEIC photos, and other formats such as GIF, AVIF, SVG and PDF,

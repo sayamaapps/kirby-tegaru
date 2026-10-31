@@ -7,9 +7,8 @@ use PHPUnit\Framework\TestCase;
 use Sayamaapps\Tegaru\Options;
 
 /**
- * Options are read as tegaru.<key>, the 1.x names, and only those. The
- * sayamaapps.tegaru.<key> names are planned for 2.0 and are not read in 1.x.
- * No notice is raised for the 1.x spelling.
+ * Options are read as sayamaapps.tegaru.<key>, falling back to the 1.x names
+ * tegaru.<key>. A set new name wins. No notice is raised for the 1.x spelling.
  */
 #[CoversClass(Options::class)]
 final class OptionsPrefixTest extends TestCase
@@ -63,6 +62,18 @@ final class OptionsPrefixTest extends TestCase
 		Dir::remove($this->tmp);
 	}
 
+	public function testANewValueThatIsInvalidIsNotReplacedByTheOneXSpelling(): void
+	{
+		$kirby = $this->app(['sayamaapps.tegaru.maxEdge' => '1920', 'tegaru.maxEdge' => 1000]);
+		expect(2400, Options::maxEdge($kirby), 'set but invalid new name: the default, not the 1.x value');
+	}
+
+	public function testANullNewValueFallsBackToTheOneXSpelling(): void
+	{
+		$kirby = $this->app(['sayamaapps.tegaru.maxEdge' => null, 'tegaru.maxEdge' => 1920]);
+		expect(1920, Options::maxEdge($kirby), 'null new name: the 1.x value is read');
+	}
+
 	public function testNotSetFallsBackToTheDefault(): void
 	{
 		$kirby = $this->app();
@@ -70,32 +81,50 @@ final class OptionsPrefixTest extends TestCase
 		expect(2400, Options::maxEdge($kirby), 'unset: default maxEdge');
 	}
 
-	public function testReadingRaisesNoNoticeInDebugMode(): void
+	public function testTheLanguageOptionUsesTheNewSpellingToo(): void
+	{
+		expect('de', Options::language($this->app(['sayamaapps.tegaru.language' => 'de'])), 'language: new spelling');
+		expect('de', Options::language($this->app(['tegaru.language' => 'de'])), 'language: 1.x spelling');
+	}
+
+	public function testTheNestedOneXSpellingIsRead(): void
+	{
+		$kirby = $this->app(['tegaru' => ['active' => true, 'maxEdge' => 1920]]);
+		expect(true, Options::active($kirby), 'nested 1.x: active');
+		expect(1920, Options::maxEdge($kirby), 'nested 1.x: maxEdge');
+	}
+
+	public function testTheNewSpellingIsRead(): void
+	{
+		$kirby = $this->app(['sayamaapps.tegaru.active' => true, 'sayamaapps.tegaru.maxEdge' => 1920]);
+		expect(true, Options::active($kirby), 'sayamaapps.tegaru.active is read');
+		expect(1920, Options::maxEdge($kirby), 'sayamaapps.tegaru.maxEdge is read');
+	}
+
+	public function testTheNewSpellingWinsWhenBothAreSet(): void
+	{
+		$kirby = $this->app([
+			'sayamaapps.tegaru.active' => false, 'tegaru.active' => true,
+			'sayamaapps.tegaru.maxEdge' => 1920, 'tegaru.maxEdge' => 1000,
+		]);
+		expect(false, Options::active($kirby), 'both set: the new name wins (false)');
+		expect(1920, Options::maxEdge($kirby), 'both set: the new name wins (1920)');
+	}
+
+	public function testTheOneXSpellingIsReadWithoutANotice(): void
 	{
 		$deprecations = $this->collectDeprecations(function (): void {
-			$kirby = $this->app(['debug' => true, 'tegaru.active' => true]);
+			$kirby = $this->app(['debug' => true, 'tegaru.active' => true, 'tegaru.maxEdge' => 1920]);
 			expect(true, Options::active($kirby), 'tegaru.active is read in debug mode');
+			expect(1920, Options::maxEdge($kirby), 'tegaru.maxEdge is read');
 			Options::forPanel($kirby);
 		});
 		expect([], $deprecations, 'no runtime notice for the 1.x spelling');
 	}
 
-	public function testTheNewSpellingIsNotReadYet(): void
-	{
-		$kirby = $this->app(['sayamaapps.tegaru.active' => true, 'sayamaapps.tegaru.maxEdge' => 1920]);
-		expect(false, Options::active($kirby), 'sayamaapps.tegaru.active is not read in 1.x');
-		expect(2400, Options::maxEdge($kirby), 'sayamaapps.tegaru.maxEdge is not read in 1.x');
-	}
-
-	public function testTheOneXSpellingIsRead(): void
-	{
-		$kirby = $this->app(['tegaru.active' => true, 'tegaru.maxEdge' => 1920]);
-		expect(true, Options::active($kirby), 'tegaru.active is read');
-		expect(1920, Options::maxEdge($kirby), 'tegaru.maxEdge is read');
-	}
-
-	public function testThePrefixKeepsItsValue(): void
+	public function testThePrefixesKeepTheirValues(): void
 	{
 		expect('tegaru.', Options::PREFIX, 'PREFIX is the 1.x prefix, unchanged for code that reads it');
+		expect('sayamaapps.tegaru.', Options::OPTION_PREFIX, 'OPTION_PREFIX is the 2.0 spelling');
 	}
 }
